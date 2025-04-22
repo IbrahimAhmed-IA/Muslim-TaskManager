@@ -1,0 +1,458 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 258 90% 66%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 258 90% 66%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 258 90% 66%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 258 90% 66%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(at 100% 0%, rgba(var(--primary-rgb)/0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(var(--primary-rgb)/0.05) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+/* Custom Variables */
+:root {
+  --primary-rgb: 139, 92, 246;
+  --secondary-rgb: 56, 189, 248;
+  --success-rgb: 34, 197, 94;
+  --warning-rgb: 234, 179, 8;
+  --danger-rgb: 239, 68, 68;
+  --light-rgb: 241, 245, 249;
+
+  /* Advanced Theme Styles */
+  --advanced-primary: #1e3a8a;
+  --advanced-secondary: #0f172a;
+  --advanced-accent: #2563eb;
+  --advanced-muted: #334155;
+  --advanced-background: #0f172a;
+  --advanced-foreground: #f8fafc;
+  --advanced-success: #059669;
+  --advanced-warning: #d97706;
+  --advanced-error: #dc2626;
+  --advanced-card: #1e293b;
+  --advanced-card-foreground: #f1f5f9;
+}
+
+/* Full page animation for mode switching */
+@keyframes modeTransition {
+  0% {
+    filter: blur(0);
+    transform: scale(1);
+  }
+  50% {
+    filter: blur(5px);
+    transform: scale(1.02);
+  }
+  100% {
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+body.mode-transition {
+  animation: modeTransition 0.8s ease-in-out;
+}
+
+/* Advanced Theme Styles */
+body.theme-advanced {
+  background-color: var(--advanced-background);
+  color: var(--advanced-foreground);
+}
+
+/* Advanced Theme Sidebar */
+.theme-advanced .sidebar {
+  background: linear-gradient(180deg, var(--advanced-secondary) 0%, var(--advanced-primary) 100%);
+}
+
+.theme-advanced .sidebar-btn {
+  background-color: rgba(30, 58, 138, 0.4);
+  color: var(--advanced-foreground);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.theme-advanced .sidebar-btn:hover {
+  background-color: rgba(30, 58, 138, 0.7);
+}
+
+.theme-advanced .sidebar-btn.active {
+  background-color: var(--advanced-accent);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  transform: scale(1.1);
+}
+
+/* Advanced Theme Cards */
+.theme-advanced .card {
+  background-color: var(--advanced-card);
+  color: var(--advanced-card-foreground);
+  border-color: #334155;
+}
+
+/* Advanced Theme Buttons */
+.theme-advanced .btn-primary {
+  background-color: var(--advanced-primary);
+  color: white;
+}
+
+.theme-advanced .btn-secondary {
+  background-color: var(--advanced-muted);
+  color: white;
+}
+
+/* Advanced Mode Task Items */
+.theme-advanced .task-item {
+  background-color: #1e293b !important;
+  border-left: 4px solid var(--advanced-accent);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.theme-advanced .task-item.priority-high {
+  border-left-color: var(--advanced-error);
+}
+
+.theme-advanced .task-item.priority-medium {
+  border-left-color: var(--advanced-warning);
+}
+
+.theme-advanced .task-item.priority-low {
+  border-left-color: var(--advanced-success);
+}
+
+.theme-advanced .task-item.completed {
+  opacity: 0.6;
+  background-color: #1e293b99 !important;
+}
+
+/* Advanced Mode Subtasks */
+.theme-advanced .subtask-container {
+  margin-left: 1.5rem;
+  padding-left: 0.5rem;
+  border-left: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+/* Advanced Mode Projects */
+.theme-advanced .project-tag {
+  background-color: rgba(30, 58, 138, 0.4);
+  color: var(--advanced-foreground);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  margin-right: 0.5rem;
+}
+
+/* Fix for white backgrounds in advanced mode */
+.theme-advanced .day-column,
+.theme-advanced .bg-white,
+.theme-advanced [class*="bg-gray-50"],
+.theme-advanced [class*="bg-gray-100"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: var(--advanced-foreground);
+}
+
+/* Need to escape the forward slash in class names */
+.theme-advanced .bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.theme-advanced .border-gray-100,
+.theme-advanced .border-gray-200 {
+  border-color: #334155 !important;
+}
+
+.theme-advanced .text-gray-400,
+.theme-advanced .text-gray-500,
+.theme-advanced .text-gray-600,
+.theme-advanced .text-gray-700 {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+.theme-advanced .shadow-sm,
+.theme-advanced .shadow-md,
+.theme-advanced .shadow-lg {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Dialog/popover advanced mode fixes */
+.theme-advanced .popper-content,
+.theme-advanced div[role="dialog"],
+.theme-advanced div[data-state="open"] {
+  background-color: #1e293b !important;
+  color: var(--advanced-foreground) !important;
+  border-color: #334155 !important;
+}
+
+/* Transition styles for smooth theme switching */
+body, .card, .task-item, .sidebar, button, div, input, textarea, select {
+  transition: all 0.3s ease;
+}
+
+/* Custom Styles */
+.bg-gradient {
+  @apply bg-gradient-to-r from-indigo-600 to-purple-600;
+  box-shadow: 0 10px 15px -3px rgba(var(--primary-rgb), 0.15);
+}
+
+.task-item {
+  @apply mb-2 p-3 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center gap-3 transition-all duration-200;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.task-item:hover {
+  @apply shadow-md border-gray-200 bg-gray-50;
+  transform: translateY(-1px);
+}
+
+.day-column {
+  @apply bg-white p-5 rounded-xl shadow-sm border border-gray-100 transition-all duration-300;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.day-column:hover {
+  @apply shadow-md;
+}
+
+.day-column h3 {
+  @apply text-lg font-semibold text-center py-3 mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg;
+  box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.2);
+}
+
+.progress-bar {
+  @apply h-2.5 rounded-full bg-gray-100 overflow-hidden;
+}
+
+.progress-value {
+  @apply h-full rounded-full bg-gradient-to-r from-indigo-600 to-purple-600;
+  transition: width 0.5s ease;
+}
+
+/* Task Priority Colors */
+.task-low {
+  @apply border-l-4 border-blue-400;
+}
+
+.task-medium {
+  @apply border-l-4 border-yellow-400;
+}
+
+.task-high {
+  @apply border-l-4 border-red-400;
+}
+
+/* Task completion styles */
+.task-item.completed label {
+  @apply line-through text-gray-400;
+}
+
+/* Cards and UI Components */
+.card {
+  @apply bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.card:hover {
+  @apply shadow-md;
+  transform: translateY(-2px);
+}
+
+.card-header {
+  @apply p-5 border-b border-gray-100;
+}
+
+.card-body {
+  @apply p-5;
+}
+
+/* Header Styles */
+.page-header {
+  @apply py-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center mb-8;
+  box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+.page-header h1 {
+  @apply relative text-3xl font-bold z-10;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.page-header p {
+  @apply relative z-10 opacity-90 mt-2;
+}
+
+/* Button Overrides */
+.btn-primary {
+  @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 font-medium shadow-sm;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.3);
+}
+
+.btn-secondary {
+  @apply bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:text-gray-900 font-medium shadow-sm;
+}
+
+/* Navigation Styles */
+.sidebar-btn {
+  @apply transition-all duration-200 rounded-xl;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-btn:hover {
+  @apply transform scale-105;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Form Elements */
+.input-enhanced {
+  @apply bg-white border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200;
+}
+
+.select-enhanced {
+  @apply bg-white border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200;
+}
+
+/* Small Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease forwards;
+}
+
+/* Button Spin Animation for Mode Toggle */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .page-header {
+    @apply py-6;
+  }
+}
+
+@layer components {
+  /* Custom scrollbar for advanced mode */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(51, 65, 85, 0.5); /* slate-700/50 */
+    border-radius: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(71, 85, 105, 0.8); /* slate-600/80 */
+    border-radius: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.9); /* slate-500/90 */
+  }
+
+  /* Firefox scrollbar styles */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(71, 85, 105, 0.8) rgba(51, 65, 85, 0.5);
+  }
+}
