@@ -14,7 +14,7 @@ import type { Task, DayOfWeek, Priority, SubTask } from '@/lib/types';
 import { useTaskContext } from '@/context/task-context';
 import { useProjectContext } from '@/context/project-context';
 import { useAppSettings } from '@/context/app-settings-context';
-import { FaCheck, FaTrash, FaPlus } from 'react-icons/fa';
+import { FaCheck, FaTrash, FaPlus, FaCalendarAlt, FaFlag, FaClock, FaProjectDiagram, FaListUl, FaSave, FaTimes } from 'react-icons/fa';
 
 interface EditTaskModalProps {
   isOpen: boolean;
@@ -70,32 +70,55 @@ export default function EditTaskModal({
     }
   };
 
+  // Define priority colors
+  const priorityColors = settings.advancedMode
+    ? {
+        low: 'bg-green-900/50 text-green-300 border-green-800',
+        medium: 'bg-yellow-900/50 text-yellow-300 border-yellow-800',
+        high: 'bg-red-900/50 text-red-300 border-red-800',
+      }
+    : {
+        low: 'bg-blue-50 text-blue-600 border-blue-200',
+        medium: 'bg-yellow-50 text-yellow-600 border-yellow-200',
+        high: 'bg-red-50 text-red-600 border-red-200',
+      };
+
+  // Get currently selected priority color
+  const selectedPriorityColor = priorityColors[priority];
+
   // Define consistent styles for the advanced mode
   const advancedStyles = settings.advancedMode ? {
-    background: 'bg-slate-800',
+    background: 'bg-gradient-to-b from-slate-800 to-slate-900',
     text: 'text-white',
     border: 'border-slate-700',
-    inputBg: 'bg-slate-700',
-    inputBorder: 'border-slate-600',
-    labelText: 'text-slate-200',  // Improved contrast from 300 to 200
+    inputBg: 'bg-slate-800',
+    inputBorder: 'border-slate-700',
+    labelText: 'text-slate-200',
     buttonBg: 'bg-blue-600',
     buttonHover: 'hover:bg-blue-700',
-    subtaskBg: 'bg-slate-700/70',
-    subtaskItem: 'bg-slate-800/90',
-    subtaskText: 'text-slate-100',  // Improved contrast
-    focusRing: 'focus:ring-blue-500',
+    subtaskBg: 'bg-slate-700/50',
+    subtaskItem: 'bg-slate-800',
+    subtaskText: 'text-white',
+    focusRing: 'focus:ring-blue-500/30',
+    focusBorder: 'focus:border-blue-500',
+    icon: 'text-slate-400',
+    modalHeader: 'bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700',
+    title: 'text-white font-bold tracking-wide',
   } : {};
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className={`sm:max-w-[600px] max-h-[90vh] overflow-hidden ${advancedStyles.background} ${advancedStyles.text} ${advancedStyles.border}`}
+        className={`sm:max-w-[600px] max-h-[90vh] overflow-hidden ${advancedStyles.background} ${advancedStyles.text} ${advancedStyles.border} shadow-xl`}
       >
-        <DialogHeader>
-          <DialogTitle className={settings.advancedMode ? 'text-white' : ''}>Edit Task</DialogTitle>
+        <DialogHeader className={`${advancedStyles.modalHeader} -mx-6 -mt-6 px-6 py-3 mb-4`}>
+          <DialogTitle className={`flex items-center gap-2 text-xl ${advancedStyles.title}`}>
+            <FaListUl className={`${settings.advancedMode ? 'text-blue-400' : 'text-indigo-600'}`} />
+            Edit Task
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-5 py-2 px-1 max-h-[calc(90vh-12rem)] overflow-y-auto custom-scrollbar">
           <div className="grid gap-2">
             <label htmlFor="edit-task-title" className={`text-sm font-medium ${advancedStyles.labelText}`}>
               Task Title
@@ -104,132 +127,177 @@ export default function EditTaskModal({
               id="edit-task-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className={`w-full ${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text}`}
+              className={`w-full py-5 text-base ${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text} ${advancedStyles.focusBorder} ${advancedStyles.focusRing}`}
+              placeholder="Enter task title..."
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
+            {/* Day Selection with icon */}
             <div className="grid gap-2">
-              <label htmlFor="edit-task-day" className={`text-sm font-medium ${advancedStyles.labelText}`}>
+              <label htmlFor="edit-task-day" className={`text-sm font-medium flex items-center gap-1.5 ${advancedStyles.labelText}`}>
+                <FaCalendarAlt className={advancedStyles.icon} size={14} />
                 Day
               </label>
-              <select
-                id="edit-task-day"
-                value={day}
-                onChange={(e) => setDay(e.target.value as DayOfWeek)}
-                className={`p-2 rounded-md border focus:outline-none focus:ring-2 ${
-                  settings.advancedMode
-                    ? `${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text} ${advancedStyles.focusRing}`
-                    : 'border-gray-300 focus:ring-primary'
-                }`}
-                style={settings.advancedMode ? { background: '#334155' /* slate-700 */ } : {}}
-              >
-                <option value="saturday" className={settings.advancedMode ? 'bg-slate-700 text-white' : ''}>Saturday</option>
-                <option value="sunday" className={settings.advancedMode ? 'bg-slate-700 text-white' : ''}>Sunday</option>
-                <option value="monday" className={settings.advancedMode ? 'bg-slate-700 text-white' : ''}>Monday</option>
-                <option value="tuesday" className={settings.advancedMode ? 'bg-slate-700 text-white' : ''}>Tuesday</option>
-                <option value="wednesday" className={settings.advancedMode ? 'bg-slate-700 text-white' : ''}>Wednesday</option>
-                <option value="thursday" className={settings.advancedMode ? 'bg-slate-700 text-white' : ''}>Thursday</option>
-                <option value="friday" className={settings.advancedMode ? 'bg-slate-700 text-white' : ''}>Friday</option>
-              </select>
+              <div className="relative">
+                <select
+                  id="edit-task-day"
+                  value={day}
+                  onChange={(e) => setDay(e.target.value as DayOfWeek)}
+                  className={`w-full py-2.5 pl-4 pr-10 rounded-lg border appearance-none capitalize ${
+                    settings.advancedMode
+                      ? `${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text} focus:outline-none ${advancedStyles.focusBorder} focus:ring-1 ${advancedStyles.focusRing}`
+                      : 'border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300'
+                  }`}
+                >
+                  {['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'].map((dayOption) => (
+                    <option key={dayOption} value={dayOption} className={settings.advancedMode ? 'bg-slate-800 text-white' : ''}>
+                      {dayOption.charAt(0).toUpperCase() + dayOption.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
+            {/* Priority Selection with icon and custom styling */}
             <div className="grid gap-2">
-              <label htmlFor="edit-task-priority" className={`text-sm font-medium ${advancedStyles.labelText}`}>
+              <label htmlFor="edit-task-priority" className={`text-sm font-medium flex items-center gap-1.5 ${advancedStyles.labelText}`}>
+                <FaFlag className={advancedStyles.icon} size={14} />
                 Priority
               </label>
-              <select
-                id="edit-task-priority"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as Priority)}
-                className={`p-2 rounded-md border focus:outline-none focus:ring-2 ${
-                  settings.advancedMode
-                    ? `${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text} ${advancedStyles.focusRing}`
-                    : 'border-gray-300 focus:ring-primary'
-                }`}
-                style={settings.advancedMode ? { background: '#334155' /* slate-700 */ } : {}}
-              >
-                <option value="low" className={settings.advancedMode ? 'bg-slate-700 text-green-300' : ''}>Low priority</option>
-                <option value="medium" className={settings.advancedMode ? 'bg-slate-700 text-yellow-300' : ''}>Medium priority</option>
-                <option value="high" className={settings.advancedMode ? 'bg-slate-700 text-red-300' : ''}>High priority</option>
-              </select>
+              <div className="relative">
+                <select
+                  id="edit-task-priority"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value as Priority)}
+                  className={`w-full py-2.5 pl-4 pr-10 rounded-lg border appearance-none ${selectedPriorityColor} focus:outline-none ${
+                    settings.advancedMode
+                      ? `${advancedStyles.focusBorder} focus:ring-1 ${advancedStyles.focusRing}`
+                      : 'focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300'
+                  }`}
+                >
+                  <option value="low" className={settings.advancedMode ? 'bg-slate-800 text-green-300' : 'bg-white text-blue-600'}>
+                    Low priority
+                  </option>
+                  <option value="medium" className={settings.advancedMode ? 'bg-slate-800 text-yellow-300' : 'bg-white text-yellow-600'}>
+                    Medium priority
+                  </option>
+                  <option value="high" className={settings.advancedMode ? 'bg-slate-800 text-red-300' : 'bg-white text-red-600'}>
+                    High priority
+                  </option>
+                </select>
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
 
           {settings.advancedMode && (
             <>
               <div className="grid grid-cols-2 gap-4">
+                {/* Pomodoro Selection with icon */}
                 <div className="grid gap-2">
-                  <label htmlFor="edit-task-pomodoro" className={`text-sm font-medium ${advancedStyles.labelText}`}>
+                  <label htmlFor="edit-task-pomodoro" className={`text-sm font-medium flex items-center gap-1.5 ${advancedStyles.labelText}`}>
+                    <FaClock className={advancedStyles.icon} size={14} />
                     Pomodoro Estimate
                   </label>
-                  <select
-                    id="edit-task-pomodoro"
-                    value={pomodoroEstimate}
-                    onChange={(e) => setPomodoroEstimate(Number.parseInt(e.target.value))}
-                    className={`p-2 rounded-md ${advancedStyles.inputBorder} ${advancedStyles.inputBg} ${advancedStyles.text} focus:outline-none focus:ring-2 ${advancedStyles.focusRing}`}
-                    style={{ background: '#334155' /* slate-700 */ }}
-                  >
-                    <option value="0" className="bg-slate-700 text-white">None</option>
-                    <option value="1" className="bg-slate-700 text-white">1 Pomodoro</option>
-                    <option value="2" className="bg-slate-700 text-white">2 Pomodoros</option>
-                    <option value="3" className="bg-slate-700 text-white">3 Pomodoros</option>
-                    <option value="4" className="bg-slate-700 text-white">4 Pomodoros</option>
-                    <option value="5" className="bg-slate-700 text-white">5 Pomodoros</option>
-                    <option value="6" className="bg-slate-700 text-white">6 Pomodoros</option>
-                    <option value="8" className="bg-slate-700 text-white">8 Pomodoros</option>
-                    <option value="10" className="bg-slate-700 text-white">10 Pomodoros</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="edit-task-pomodoro"
+                      value={pomodoroEstimate}
+                      onChange={(e) => setPomodoroEstimate(Number.parseInt(e.target.value))}
+                      className={`w-full py-2.5 pl-4 pr-10 rounded-lg border appearance-none ${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text} focus:outline-none ${advancedStyles.focusBorder} focus:ring-1 ${advancedStyles.focusRing}`}
+                    >
+                      <option value="0" className="bg-slate-800 text-white">None</option>
+                      {[1, 2, 3, 4, 5, 6, 8, 10].map((num) => (
+                        <option key={num} value={num} className="bg-slate-800 text-white">
+                          {num} {num === 1 ? 'Pomodoro' : 'Pomodoros'}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Project Selection with icon */}
                 <div className="grid gap-2">
-                  <label htmlFor="edit-task-project" className={`text-sm font-medium ${advancedStyles.labelText}`}>
+                  <label htmlFor="edit-task-project" className={`text-sm font-medium flex items-center gap-1.5 ${advancedStyles.labelText}`}>
+                    <FaProjectDiagram className={advancedStyles.icon} size={14} />
                     Project
                   </label>
-                  <select
-                    id="edit-task-project"
-                    value={projectId}
-                    onChange={(e) => setProjectId(e.target.value)}
-                    className={`p-2 rounded-md ${advancedStyles.inputBorder} ${advancedStyles.inputBg} ${advancedStyles.text} focus:outline-none focus:ring-2 ${advancedStyles.focusRing}`}
-                    style={{ background: '#334155' /* slate-700 */ }}
-                  >
-                    <option value="" className="bg-slate-700 text-white">No Project</option>
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id} className="bg-slate-700 text-white">
-                        {project.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="edit-task-project"
+                      value={projectId}
+                      onChange={(e) => setProjectId(e.target.value)}
+                      className={`w-full py-2.5 pl-4 pr-10 rounded-lg border appearance-none ${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text} focus:outline-none ${advancedStyles.focusBorder} focus:ring-1 ${advancedStyles.focusRing}`}
+                    >
+                      <option value="" className="bg-slate-800 text-white">No Project</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.id} className="bg-slate-800 text-white">
+                          {project.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Subtasks Management - Improved with fixed height and better styling */}
-              <div className="mt-4">
-                <label className={`text-sm font-medium ${advancedStyles.labelText} mb-2 block`}>
+              {/* Subtasks Management - Enhanced with better styling */}
+              <div className="mt-2">
+                <label className={`text-sm font-medium flex items-center gap-1.5 mb-3 ${advancedStyles.labelText}`}>
+                  <FaListUl className={advancedStyles.icon} size={14} />
                   Subtasks
                 </label>
 
                 {task.subtasks && task.subtasks.length > 0 ? (
-                  <div className={`space-y-2 mb-4 max-h-[140px] overflow-y-auto p-2 ${advancedStyles.subtaskBg} rounded-md custom-scrollbar`}>
+                  <div className={`space-y-2 mb-4 max-h-[200px] overflow-y-auto p-3 ${advancedStyles.subtaskBg} rounded-lg border ${advancedStyles.inputBorder} custom-scrollbar`}>
                     {task.subtasks.map((subtask: SubTask) => (
-                      <div key={subtask.id} className={`flex items-center justify-between p-2 border ${advancedStyles.inputBorder} rounded ${advancedStyles.subtaskItem}`}>
-                        <div className="flex items-center overflow-hidden">
+                      <div
+                        key={subtask.id}
+                        className={`flex items-center justify-between p-2.5 border ${advancedStyles.inputBorder} rounded-lg ${advancedStyles.subtaskItem} transition-all duration-200 hover:shadow-md`}
+                      >
+                        <div className="flex items-center overflow-hidden max-w-[90%]">
                           <button
                             onClick={() => toggleSubtask(task.id, subtask.id)}
-                            className={`min-w-5 h-5 rounded-full mr-2 ${
-                              subtask.completed ? 'bg-green-600 text-white' : 'bg-slate-600'
+                            className={`min-w-5 h-5 rounded-full mr-2.5 transition-colors duration-200 ${
+                              subtask.completed
+                                ? 'bg-green-600 text-white'
+                                : 'bg-slate-700 hover:bg-slate-600'
                             } flex items-center justify-center flex-shrink-0`}
                             aria-label={subtask.completed ? 'Mark as incomplete' : 'Mark as complete'}
                           >
                             {subtask.completed && <FaCheck size={10} />}
                           </button>
-                          <span className={`${subtask.completed ? 'line-through text-slate-400' : advancedStyles.subtaskText} truncate`}>
+                          <span className={`${
+                            subtask.completed
+                              ? 'line-through text-slate-400'
+                              : advancedStyles.subtaskText
+                            } break-words text-sm`}
+                            style={{ wordBreak: 'break-word' }}>
                             {subtask.title}
                           </span>
                         </div>
                         <button
                           onClick={() => deleteSubtask(task.id, subtask.id)}
-                          className="text-red-400 hover:text-red-300 flex-shrink-0 ml-2"
+                          className="text-red-400 hover:text-red-300 flex-shrink-0 ml-2 transition-colors duration-200 p-1 rounded-full hover:bg-red-900/30"
                           aria-label="Delete subtask"
                         >
                           <FaTrash size={14} />
@@ -238,24 +306,28 @@ export default function EditTaskModal({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-400 text-sm mb-4">No subtasks added yet</p>
+                  <div className={`text-slate-400 text-sm mb-4 p-4 rounded-lg border ${advancedStyles.inputBorder} ${advancedStyles.subtaskBg} flex justify-center items-center`}>
+                    No subtasks added yet
+                  </div>
                 )}
 
                 <div className="flex space-x-2">
-                  <Input
-                    placeholder="Add a new subtask..."
-                    value={newSubtaskTitle}
-                    onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleAddSubtask();
-                    }}
-                    className={`flex-1 ${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text}`}
-                  />
+                  <div className="relative flex-1">
+                    <Input
+                      placeholder="Add a new subtask..."
+                      value={newSubtaskTitle}
+                      onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddSubtask();
+                      }}
+                      className={`h-10 pl-4 ${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text} ${advancedStyles.focusBorder} ${advancedStyles.focusRing}`}
+                    />
+                  </div>
                   <Button
                     onClick={handleAddSubtask}
-                    className={`${advancedStyles.buttonBg} ${advancedStyles.buttonHover} flex-shrink-0`}
+                    className={`${advancedStyles.buttonBg} ${advancedStyles.buttonHover} flex-shrink-0 h-10`}
                   >
-                    <FaPlus className="mr-1" /> Add
+                    <FaPlus className="mr-1.5" /> Add
                   </Button>
                 </div>
               </div>
@@ -263,19 +335,27 @@ export default function EditTaskModal({
           )}
         </div>
 
-        <DialogFooter className="flex justify-end space-x-2 mt-4">
+        <DialogFooter className="flex justify-end space-x-3 mt-5 border-t pt-4 border-slate-700">
           <Button
             variant="outline"
             onClick={onClose}
-            className={settings.advancedMode ? `${advancedStyles.inputBg} ${advancedStyles.inputBorder} ${advancedStyles.text} hover:bg-slate-600` : ''}
+            className={`transition-colors ${
+              settings.advancedMode
+                ? `${advancedStyles.inputBg} ${advancedStyles.inputBorder} text-slate-300 hover:bg-slate-700 hover:text-white`
+                : ''
+            }`}
           >
-            Cancel
+            <FaTimes className="mr-1.5" /> Cancel
           </Button>
           <Button
             onClick={handleSubmit}
-            className={settings.advancedMode ? `${advancedStyles.buttonBg} ${advancedStyles.buttonHover}` : ''}
+            className={`transition-colors ${
+              settings.advancedMode
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
+                : ''
+            }`}
           >
-            Save Changes
+            <FaSave className="mr-1.5" /> Save Changes
           </Button>
         </DialogFooter>
       </DialogContent>

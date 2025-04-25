@@ -9,8 +9,9 @@ import { useTaskContext } from '@/context/task-context';
 import { useProjectContext } from '@/context/project-context';
 import { useAppSettings } from '@/context/app-settings-context';
 import { usePomodoroContext } from '@/context/pomodoro-context';
-import { FaTrash, FaEdit, FaRegCircle, FaRegCheckCircle, FaClock, FaPlus, FaList, FaCheckCircle } from 'react-icons/fa';
+import { FaTrash, FaEdit, FaRegCircle, FaRegCheckCircle, FaClock, FaPlus, FaList, FaCheckCircle, FaEllipsisV, FaRedo } from 'react-icons/fa';
 import EditTaskModal from './modals/edit-task-modal';
+import RepeatTaskModal from './modals/repeat-task-modal';
 
 interface TaskItemProps {
   task: Task;
@@ -19,7 +20,7 @@ interface TaskItemProps {
 }
 
 export default function TaskItem({ task, isSelected, onSelect }: TaskItemProps) {
-  const { toggleTask, deleteTask, addSubtask, toggleSubtask, deleteSubtask, setCurrentPomodoroTask } = useTaskContext();
+  const { toggleTask, deleteTask, addSubtask, toggleSubtask, deleteSubtask, editSubtask, setCurrentPomodoroTask } = useTaskContext();
   const { getProjectById } = useProjectContext();
   const { settings } = useAppSettings();
   const { timerType } = usePomodoroContext();
@@ -27,6 +28,13 @@ export default function TaskItem({ task, isSelected, onSelect }: TaskItemProps) 
   const [isHovering, setIsHovering] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [showAddSubtask, setShowAddSubtask] = useState(false);
+
+  const [activeSubtaskMenu, setActiveSubtaskMenu] = useState<string | null>(null);
+  const [subtaskEditMode, setSubtaskEditMode] = useState<string | null>(null);
+  const [editedSubtaskTitle, setEditedSubtaskTitle] = useState('');
+  const [showRepeatModal, setShowRepeatModal] = useState(false);
+
+  const [showTaskMenu, setShowTaskMenu] = useState(false);
 
   const project = task.projectId ? getProjectById(task.projectId) : null;
   const priorityClass = `priority-${task.priority}`;
@@ -37,8 +45,8 @@ export default function TaskItem({ task, isSelected, onSelect }: TaskItemProps) 
     taskHoverBg: 'hover:bg-slate-700',
     itemBorder: 'border-slate-700',
     text: 'text-white',
-    mutedText: 'text-slate-200', // Improved from text-slate-300
-    subtaskBg: 'bg-slate-700/80',
+    mutedText: 'text-white', // Changed from text-slate-200 to text-white for maximum contrast
+    subtaskBg: 'bg-slate-600/80', // Changed from bg-slate-700/80 to bg-slate-600/80
     buttonHover: {
       edit: 'hover:bg-blue-900/50 hover:text-blue-300',
       delete: 'hover:bg-red-900/50 hover:text-red-300',
@@ -84,6 +92,18 @@ export default function TaskItem({ task, isSelected, onSelect }: TaskItemProps) 
     }
   };
 
+  const handleEditSubtask = (subtaskId: string, currentTitle: string) => {
+    setSubtaskEditMode(subtaskId);
+    setEditedSubtaskTitle(currentTitle);
+  };
+
+  const saveSubtaskEdit = (subtaskId: string) => {
+    if (editedSubtaskTitle.trim()) {
+      editSubtask(task.id, subtaskId, editedSubtaskTitle);
+      setSubtaskEditMode(null);
+    }
+  };
+
   return (
     <>
       <div
@@ -93,7 +113,11 @@ export default function TaskItem({ task, isSelected, onSelect }: TaskItemProps) 
             : `${task.completed ? 'completed bg-gray-50' : ''}`
         }`}
         onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
+        onMouseLeave={() => {
+          setIsHovering(false);
+          setActiveSubtaskMenu(null);
+          setShowTaskMenu(false);
+        }}
       >
         <Checkbox
           checked={isSelected}
@@ -153,41 +177,113 @@ export default function TaskItem({ task, isSelected, onSelect }: TaskItemProps) 
                 </div>
               </div>
 
-              {/* Subtasks in advanced mode with improved styling */}
               {settings.advancedMode && task.subtasks && task.subtasks.length > 0 && (
                 <div className="subtask-container mt-2 pl-1 border-l-2 border-slate-600">
                   {task.subtasks.map((subtask: SubTask) => (
-                    <div key={subtask.id} className="flex items-center justify-between py-1 pl-2 text-sm">
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSubtask(task.id, subtask.id);
-                        }}
-                        className="flex items-center cursor-pointer overflow-hidden"
-                      >
-                        {subtask.completed ? (
-                          <FaCheckCircle className="text-green-400 text-xs mr-2 flex-shrink-0" />
-                        ) : (
-                          <FaRegCircle className="text-gray-400 text-xs mr-2 flex-shrink-0" />
-                        )}
-                        <span className={`${subtask.completed ? 'line-through text-gray-500' : advancedStyles.mutedText} break-words`}
-                          style={{ wordBreak: 'break-word' }}
-                        >
-                          {subtask.title}
-                        </span>
-                      </div>
+                    <div key={subtask.id} className={`flex items-center justify-between py-1 pl-2 text-sm ${advancedStyles.subtaskBg} rounded mb-1`}>
+                      {subtaskEditMode === subtask.id ? (
+                        <div className="flex items-center w-full pr-2">
+                          <Input
+                            value={editedSubtaskTitle}
+                            onChange={(e) => setEditedSubtaskTitle(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveSubtaskEdit(subtask.id);
+                              if (e.key === 'Escape') setSubtaskEditMode(null);
+                            }}
+                            className="text-sm h-7 bg-slate-700 border-slate-600 text-white focus:border-blue-500"
+                            autoFocus
+                          />
+                          <div className="flex ml-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => saveSubtaskEdit(subtask.id)}
+                              className="p-0 h-auto bg-green-600/40 hover:bg-green-700/50 text-green-300 rounded-lg ml-1 flex-shrink-0 w-6 h-6 flex items-center justify-center"
+                            >
+                              <FaCheckCircle className="text-xs" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSubtaskEditMode(null)}
+                              className="p-0 h-auto bg-red-600/40 hover:bg-red-700/50 text-red-300 rounded-lg ml-1 flex-shrink-0 w-6 h-6 flex items-center justify-center"
+                            >
+                              <FaTrash className="text-xs" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSubtask(task.id, subtask.id);
+                            }}
+                            className="flex items-center cursor-pointer overflow-hidden max-w-[90%]"
+                          >
+                            {subtask.completed ? (
+                              <FaCheckCircle className="text-green-400 text-xs mr-2 flex-shrink-0" />
+                            ) : (
+                              <FaRegCircle className="text-gray-400 text-xs mr-2 flex-shrink-0" />
+                            )}
+                            <span className={`${subtask.completed ? 'line-through text-gray-500' : advancedStyles.mutedText} break-words`}
+                              style={{ wordBreak: 'break-word' }}
+                            >
+                              {subtask.title}
+                            </span>
+                          </div>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteSubtask(task.id, subtask.id);
-                        }}
-                        className="p-0 h-auto hover:bg-transparent hover:text-red-400 rounded-lg ml-2 flex-shrink-0"
-                      >
-                        <FaTrash className="text-red-400 text-xs" />
-                      </Button>
+                          <div className="relative">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveSubtaskMenu(activeSubtaskMenu === subtask.id ? null : subtask.id);
+                              }}
+                              className="p-0 h-auto hover:bg-slate-600 rounded-lg ml-2 flex-shrink-0 w-6 h-6 flex items-center justify-center"
+                              aria-label="Subtask options"
+                            >
+                              <FaEllipsisV className="text-slate-300 text-xs" />
+                            </Button>
+
+                            {activeSubtaskMenu === subtask.id && (
+                              <div className="absolute right-0 bottom-full mb-2 bg-slate-700 rounded-md shadow-lg z-[9999] p-1 border border-slate-600 min-w-24"
+                                   style={{
+                                     maxHeight: 'none',
+                                     overflow: 'visible'
+                                   }}>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditSubtask(subtask.id, subtask.title);
+                                    setActiveSubtaskMenu(null);
+                                  }}
+                                  className="p-2 h-auto text-blue-300 hover:bg-slate-600 rounded-md flex items-center justify-between w-full"
+                                >
+                                  <FaEdit className="text-xs mr-2" />
+                                  <span className="text-xs">Edit</span>
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteSubtask(task.id, subtask.id);
+                                    setActiveSubtaskMenu(null);
+                                  }}
+                                  className="p-2 h-auto text-red-300 hover:bg-slate-600 rounded-md flex items-center justify-between w-full mt-1"
+                                >
+                                  <FaTrash className="text-xs mr-2" />
+                                  <span className="text-xs">Delete</span>
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -196,65 +292,121 @@ export default function TaskItem({ task, isSelected, onSelect }: TaskItemProps) 
           </div>
         </div>
 
+        {/* Task action buttons: Only Pomodoro button visible, rest in three-dot menu */}
         <div className={`flex gap-1 transition-opacity duration-200 ${isHovering ? 'opacity-100' : 'opacity-50'}`}>
           {settings.advancedMode && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowAddSubtask(!showAddSubtask);
-                }}
-                className={`p-1 h-auto ${settings.advancedMode ? `${advancedStyles.buttonHover.list} text-slate-300` : 'hover:bg-blue-50 hover:text-blue-600'} rounded-lg`}
-                title="Add subtask"
-              >
-                <FaList />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSetCurrentPomodoro();
-                }}
-                className={`p-1 h-auto ${
-                  settings.advancedMode ?
-                    `${advancedStyles.buttonHover.pomodoro} text-slate-300 ${task.currentPomodoroTask ? 'bg-purple-900/50 text-purple-300' : ''}` :
-                    'hover:bg-purple-50 hover:text-purple-600'
-                  } rounded-lg`}
-                title="Set as current pomodoro task"
-                disabled={timerType !== 'work'}
-              >
-                <FaClock />
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSetCurrentPomodoro();
+              }}
+              className={`p-1 h-auto ${
+                settings.advancedMode ?
+                  `${advancedStyles.buttonHover.pomodoro} text-slate-300 ${task.currentPomodoroTask ? 'bg-purple-900/50 text-purple-300' : ''}` :
+                  'hover:bg-purple-50 hover:text-purple-600'
+                } rounded-lg`}
+              title="Set as current pomodoro task"
+              disabled={timerType !== 'work'}
+            >
+              <FaClock />
+            </Button>
           )}
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowEditModal(true);
-            }}
-            className={`p-1 h-auto ${settings.advancedMode ? `${advancedStyles.buttonHover.edit} text-slate-300` : 'hover:bg-blue-50 hover:text-blue-600'} rounded-lg`}
-          >
-            <FaEdit />
-          </Button>
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTaskMenu(!showTaskMenu);
+              }}
+              className={`p-1 h-auto ${settings.advancedMode ? 'text-slate-300 hover:bg-slate-700' : 'hover:bg-gray-100'} rounded-lg`}
+              aria-label="Task actions"
+            >
+              <FaEllipsisV />
+            </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete();
-            }}
-            className={`p-1 h-auto ${settings.advancedMode ? `${advancedStyles.buttonHover.delete} text-slate-300` : 'hover:bg-red-50 hover:text-red-600'} rounded-lg`}
-          >
-            <FaTrash />
-          </Button>
+            {showTaskMenu && (
+              <div
+                className={`absolute right-0 bottom-full mb-2 ${
+                  settings.advancedMode ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-200'
+                } rounded-md shadow-lg z-[9999] p-1 border min-w-[140px]`}
+                style={{
+                  maxHeight: 'none',
+                  overflow: 'visible'
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {settings.advancedMode && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAddSubtask(!showAddSubtask);
+                      setShowTaskMenu(false);
+                    }}
+                    className={`p-2 h-auto ${
+                      settings.advancedMode ? 'text-blue-300 hover:bg-slate-600' : 'text-blue-600 hover:bg-blue-50'
+                    } rounded-md flex items-center justify-between w-full mb-1`}
+                  >
+                    <FaList className="text-xs mr-2" />
+                    <span className="text-xs">Add Subtask</span>
+                  </Button>
+                )}
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowRepeatModal(true);
+                    setShowTaskMenu(false);
+                  }}
+                  className={`p-2 h-auto ${
+                    settings.advancedMode ? 'text-green-300 hover:bg-slate-600' : 'text-green-600 hover:bg-green-50'
+                  } rounded-md flex items-center justify-between w-full mb-1`}
+                >
+                  <FaRedo className="text-xs mr-2" />
+                  <span className="text-xs">Repeat Task</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowEditModal(true);
+                    setShowTaskMenu(false);
+                  }}
+                  className={`p-2 h-auto ${
+                    settings.advancedMode ? 'text-blue-300 hover:bg-slate-600' : 'text-blue-600 hover:bg-blue-50'
+                  } rounded-md flex items-center justify-between w-full mb-1`}
+                >
+                  <FaEdit className="text-xs mr-2" />
+                  <span className="text-xs">Edit Task</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete();
+                    setShowTaskMenu(false);
+                  }}
+                  className={`p-2 h-auto ${
+                    settings.advancedMode ? 'text-red-300 hover:bg-slate-600' : 'text-red-600 hover:bg-red-50'
+                  } rounded-md flex items-center justify-between w-full`}
+                >
+                  <FaTrash className="text-xs mr-2" />
+                  <span className="text-xs">Delete Task</span>
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -284,6 +436,16 @@ export default function TaskItem({ task, isSelected, onSelect }: TaskItemProps) 
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         task={task}
+      />
+
+      {/* Repeat Task Modal */}
+      <RepeatTaskModal
+        isOpen={showRepeatModal}
+        onClose={() => setShowRepeatModal(false)}
+        taskIds={[task.id]} // Just this single task
+        onTasksRepeated={() => {
+          setShowRepeatModal(false);
+        }}
       />
     </>
   );

@@ -174,3 +174,83 @@ export const addWeeklyScore = (score: WeeklyScore): void => {
   scores.push(score);
   saveWeeklyScores(scores);
 };
+
+// Timer State Storage
+interface TimerState {
+  isRunning: boolean;
+  timerType: 'work' | 'shortBreak' | 'longBreak';
+  timeLeft: number;
+  completedPomodoros: number;
+  endTime: number | null;
+  lastUpdated: number;
+}
+
+const DEFAULT_TIMER_STATE: TimerState = {
+  isRunning: false,
+  timerType: 'work',
+  timeLeft: 1500, // 25 minutes in seconds
+  completedPomodoros: 0,
+  endTime: null,
+  lastUpdated: Date.now()
+};
+
+const TIMER_STATE_KEY = 'muslim_task_manager_timer_state';
+
+export const getTimerState = (): TimerState => {
+  if (typeof window === 'undefined') return DEFAULT_TIMER_STATE;
+
+  const stateJson = localStorage.getItem(TIMER_STATE_KEY);
+  if (!stateJson) return DEFAULT_TIMER_STATE;
+
+  try {
+    const savedState = JSON.parse(stateJson) as TimerState;
+
+    // If the timer was running when saved, calculate remaining time
+    if (savedState.isRunning && savedState.endTime) {
+      const elapsed = Math.floor((Date.now() - savedState.lastUpdated) / 1000);
+      savedState.timeLeft = Math.max(0, savedState.timeLeft - elapsed);
+
+      // If timer has completed while away, reset it to not running
+      if (savedState.timeLeft <= 0) {
+        savedState.isRunning = false;
+        savedState.endTime = null;
+
+        // If it was a work session, increment completed pomodoros
+        if (savedState.timerType === 'work') {
+          savedState.completedPomodoros += 1;
+
+          // Determine next break type
+          const settings = getPomodoroSettings();
+          if (savedState.completedPomodoros % settings.longBreakInterval === 0) {
+            savedState.timerType = 'longBreak';
+            savedState.timeLeft = settings.longBreakDuration * 60;
+          } else {
+            savedState.timerType = 'shortBreak';
+            savedState.timeLeft = settings.shortBreakDuration * 60;
+          }
+        } else {
+          // If it was a break, next should be work
+          savedState.timerType = 'work';
+          savedState.timeLeft = getPomodoroSettings().workDuration * 60;
+        }
+      }
+    }
+
+    savedState.lastUpdated = Date.now();
+    return savedState;
+  } catch (error) {
+    console.error('Failed to parse timer state from localStorage', error);
+    return DEFAULT_TIMER_STATE;
+  }
+};
+
+export const saveTimerState = (state: Omit<TimerState, 'lastUpdated'>): void => {
+  if (typeof window === 'undefined') return;
+
+  const stateWithTimestamp = {
+    ...state,
+    lastUpdated: Date.now()
+  };
+
+  localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(stateWithTimestamp));
+};

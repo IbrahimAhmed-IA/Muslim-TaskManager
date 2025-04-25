@@ -179,7 +179,21 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getTasksByDay = (day: DayOfWeek): Task[] => {
-    return tasks.filter((task) => task.day === day);
+    const dayTasks = tasks.filter((task) => task.day === day);
+    // Sort tasks: uncompleted first, then completed
+    return dayTasks.sort((a, b) => {
+      // First, sort by completion status (incomplete first)
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+
+      // If both tasks have the same completion status, sort by priority
+      const priorityOrder: Record<Priority, number> = {
+        high: 1,
+        medium: 2,
+        low: 3,
+      };
+
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    });
   };
 
   // Calculate progress based on weighted effort
@@ -269,14 +283,22 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
             : subtask
         );
 
-        // Check if all subtasks are now completed
+        // Find the subtask that was toggled
+        const toggledSubtask = updatedSubtasks.find(subtask => subtask.id === subtaskId);
+
+        // If we're unchecking a subtask, the parent task should also be unchecked
+        const shouldUncheckParent = toggledSubtask && !toggledSubtask.completed;
+
+        // Check if all subtasks are completed (used when checking a subtask)
         const allSubtasksComplete = updatedSubtasks.every((subtask) => subtask.completed);
 
-        // If all subtasks are complete, also mark the parent task as complete
+        // Update the parent task completed status:
+        // - If unchecking a subtask: always uncheck the parent
+        // - If checking a subtask: check the parent only if all subtasks are complete
         return {
           ...task,
           subtasks: updatedSubtasks,
-          completed: allSubtasksComplete ? true : task.completed,
+          completed: shouldUncheckParent ? false : (allSubtasksComplete ? true : task.completed),
         };
       })
     );

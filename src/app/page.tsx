@@ -3,9 +3,8 @@
 import React from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import TaskManager from '@/components/task-manager/task-manager';
-import Providers from '@/providers';
 
-// We'll move the context usage inside a component that's wrapped by Providers
+// We'll move the context usage inside a component to ensure it's used within the provider
 const HomeContent = () => {
   // Import inside the component to avoid context issues
   const { useWeeklyScoreContext } = require('@/context/weekly-score-context');
@@ -20,10 +19,8 @@ const HomeContent = () => {
 
 export default function Home() {
   return (
-    <Providers>
-      <MainLayout>
-        <HomeContent />
-      </MainLayout>
-    </Providers>
+    <MainLayout>
+      <HomeContent />
+    </MainLayout>
   );
 }

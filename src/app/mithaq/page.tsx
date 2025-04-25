@@ -2,12 +2,11 @@
 
 import React from 'react';
 import MainLayout from '@/components/layout/main-layout';
-import Providers from '@/providers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { FaChartLine, FaClock, FaCalendarAlt, FaMedal } from 'react-icons/fa';
 
-// We'll move the component that uses the context inside the Providers
+// Component that uses the context
 const MithaqContent = () => {
   // Import inside the component to avoid context issues
   const { useWeeklyScoreContext } = require('@/context/weekly-score-context');
@@ -167,10 +166,8 @@ const MithaqContent = () => {
 
 export default function MithaqPage() {
   return (
-    <Providers>
-      <MainLayout>
-        <MithaqContent />
-      </MainLayout>
-    </Providers>
+    <MainLayout>
+      <MithaqContent />
+    </MainLayout>
   );
 }

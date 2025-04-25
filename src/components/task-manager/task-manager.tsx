@@ -11,7 +11,7 @@ import { useTaskContext } from '@/context/task-context';
 import { usePomodoroContext } from '@/context/pomodoro-context';
 import { useAppSettings } from '@/context/app-settings-context';
 import type { DayOfWeek, Task } from '@/lib/types';
-import CopyTaskModal from './modals/copy-task-modal';
+import RepeatTaskModal from './modals/repeat-task-modal';
 import AzanTimes from '@/components/azan/azan-times';
 
 export default function TaskManager() {
@@ -28,7 +28,7 @@ export default function TaskManager() {
   const { settings } = useAppSettings();
   const { onPomodoroComplete } = usePomodoroContext();
 
-  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [showRepeatModal, setShowRepeatModal] = useState(false);
 
   const progressPercentage = getOverallProgress();
 
@@ -46,13 +46,13 @@ export default function TaskManager() {
     onPomodoroComplete(handlePomodoroComplete);
   }, [tasks, onPomodoroComplete, incrementTaskPomodoro]);
 
-  const handleCopyTasks = () => {
+  const handleRepeatTasks = () => {
     if (selectedTasks.length === 0) return;
-    setShowCopyModal(true);
+    setShowRepeatModal(true);
   };
 
-  const handleCopyModalClose = () => {
-    setShowCopyModal(false);
+  const handleRepeatModalClose = () => {
+    setShowRepeatModal(false);
   };
 
   const handleUncheckAllTasks = () => {
@@ -62,6 +62,27 @@ export default function TaskManager() {
   const days: DayOfWeek[] = [
     'saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'
   ];
+
+  // Get the current day of the week
+  const getCurrentDay = (): DayOfWeek => {
+    const daysMap: Record<number, DayOfWeek> = {
+      0: 'sunday',     // Sunday
+      1: 'monday',     // Monday
+      2: 'tuesday',    // Tuesday
+      3: 'wednesday',  // Wednesday
+      4: 'thursday',   // Thursday
+      5: 'friday',     // Friday
+      6: 'saturday'    // Saturday
+    };
+    const dayIndex = new Date().getDay();
+    return daysMap[dayIndex];
+  };
+
+  // Get the current day and organize days array with current day first
+  const currentDay = getCurrentDay();
+
+  // Remove current day from the days array and create a new array with remaining days
+  const remainingDays = days.filter(day => day !== currentDay);
 
   return (
     <div className={`task-manager w-full fade-in ${settings.advancedMode ? 'text-white' : ''}`}>
@@ -121,63 +142,83 @@ export default function TaskManager() {
           </div>
 
           {/* Task Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-            <Button
-              onClick={handleCopyTasks}
-              disabled={selectedTasks.length === 0}
-              className={`btn-primary py-5 ${
-                settings.advancedMode
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-700 disabled:text-slate-400'
-                  : ''
-              }`}
-            >
-              Copy Selected Tasks ({selectedTasks.length})
-            </Button>
+          <div className="grid grid-cols-1 gap-3 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button
+                onClick={handleUncheckAllTasks}
+                className={`btn-primary py-5 ${
+                  settings.advancedMode
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    : ''
+                }`}
+              >
+                Uncheck All Tasks
+              </Button>
 
-            <Button
-              onClick={handleUncheckAllTasks}
-              className={`btn-primary py-5 ${
-                settings.advancedMode
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  : ''
-              }`}
-            >
-              Uncheck All Tasks
-            </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={handleRepeatTasks}
+                  disabled={selectedTasks.length === 0}
+                  className={`btn-primary py-5 ${
+                    settings.advancedMode
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-700 disabled:text-slate-400'
+                      : ''
+                  }`}
+                >
+                  Repeat ({selectedTasks.length})
+                </Button>
 
-            <Button
-              onClick={sortTasks}
-              className={`sm:col-span-2 py-5 ${
-                settings.advancedMode
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white'
-                  : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white'
-              }`}
-            >
-              Organize & Sort Tasks
-            </Button>
+                <Button
+                  onClick={sortTasks}
+                  className={`py-5 ${
+                    settings.advancedMode
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white'
+                      : 'bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white'
+                  }`}
+                >
+                  Sort & Organize
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Day Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {days.map((day, index) => (
-            <div key={day} className="slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
-              <TaskColumn
-                day={day}
-              />
+        <div className="grid grid-cols-1 gap-8">
+          {/* Current Day - Full Width */}
+          <div key={currentDay} className="slide-up">
+            <div className="mb-2">
+              <span className={`font-medium ${settings.advancedMode ? 'text-white' : 'text-gray-700'}`}>
+                Today
+              </span>
+              <span className={`${settings.advancedMode ? 'text-blue-300' : 'text-blue-600'} ml-2 font-medium capitalize`}>
+                ({currentDay})
+              </span>
             </div>
-          ))}
+            <TaskColumn day={currentDay} isCurrentDay={true} />
+          </div>
+
+          {/* Other Days - 3 columns with clear separation */}
+          <div className="mt-4 pt-2 border-t border-gray-200 dark:border-slate-700">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+              {remainingDays.map((day, index) => (
+                <div key={day} className="slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
+                  <TaskColumn day={day} isCurrentDay={false} />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Copy Task Modal */}
-      <CopyTaskModal
-        isOpen={showCopyModal}
-        onClose={handleCopyModalClose}
+      {/* Repeat Task Modal */}
+      <RepeatTaskModal
+        isOpen={showRepeatModal}
+        onClose={handleRepeatModalClose}
         taskIds={selectedTasks}
-        onTasksCopied={() => {
+        onTasksRepeated={() => {
           setSelectedTasks([]);
-          setShowCopyModal(false);
+          setShowRepeatModal(false);
         }}
       />
     </div>
