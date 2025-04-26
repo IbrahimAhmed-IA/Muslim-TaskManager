@@ -7,8 +7,7 @@ import type { DayOfWeek, Priority } from '@/lib/types';
 import { useTaskContext } from '@/context/task-context';
 import { useProjectContext } from '@/context/project-context';
 import { useAppSettings } from '@/context/app-settings-context';
-import { FaPlus, FaRedo, FaCalendarAlt, FaFlag, FaClock, FaProjectDiagram } from 'react-icons/fa';
-import RepeatTaskModal from './modals/repeat-task-modal';
+import { FaPlus, FaCalendarAlt, FaFlag, FaClock, FaProjectDiagram } from 'react-icons/fa';
 
 export default function TaskInput() {
   const { addTask } = useTaskContext();
@@ -20,7 +19,6 @@ export default function TaskInput() {
   const [priority, setPriority] = useState<Priority>('low');
   const [pomodoroEstimate, setPomodoroEstimate] = useState<number>(0);
   const [projectId, setProjectId] = useState<string>('');
-  const [showRepeatModal, setShowRepeatModal] = useState(false);
 
   const handleAddTask = () => {
     if (title.trim()) {
@@ -52,11 +50,13 @@ export default function TaskInput() {
   const selectedPriorityColor = priorityColors[priority];
 
   return (
-    <div className={`flex flex-col gap-4 ${
-      settings.advancedMode
-        ? 'bg-gradient-to-b from-slate-800 to-slate-900 p-5 rounded-xl border border-slate-700 shadow-md'
-        : ''
-    }`}>
+    <div
+      className={`flex flex-col gap-4 ${
+        settings.advancedMode
+          ? 'bg-gradient-to-b from-slate-800 to-slate-900 p-5 rounded-xl border border-slate-700 shadow-md'
+          : ''
+      }`}
+    >
       <div className="relative">
         <Input
           type="text"
@@ -76,7 +76,7 @@ export default function TaskInput() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {/* Day Selection with icon */}
         <div className="relative">
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
@@ -98,8 +98,18 @@ export default function TaskInput() {
             ))}
           </select>
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-            <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            <svg
+              className="h-4 w-4 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
         </div>
@@ -117,7 +127,10 @@ export default function TaskInput() {
             <option value="low" className={settings.advancedMode ? 'bg-slate-800 text-green-300' : 'bg-white text-blue-600'}>
               Low priority
             </option>
-            <option value="medium" className={settings.advancedMode ? 'bg-slate-800 text-yellow-300' : 'bg-white text-yellow-600'}>
+            <option
+              value="medium"
+              className={settings.advancedMode ? 'bg-slate-800 text-yellow-300' : 'bg-white text-yellow-600'}
+            >
               Medium priority
             </option>
             <option value="high" className={settings.advancedMode ? 'bg-slate-800 text-red-300' : 'bg-white text-red-600'}>
@@ -125,8 +138,18 @@ export default function TaskInput() {
             </option>
           </select>
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-            <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            <svg
+              className="h-4 w-4 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
         </div>
@@ -154,8 +177,18 @@ export default function TaskInput() {
                 ))}
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                <svg
+                  className="h-4 w-4 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
             </div>
@@ -180,8 +213,18 @@ export default function TaskInput() {
                 ))}
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                <svg
+                  className="h-4 w-4 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
             </div>
@@ -199,29 +242,7 @@ export default function TaskInput() {
         >
           <FaPlus className="mr-2" /> Add Task
         </Button>
-
-        {/* Repeat Button */}
-        <Button
-          onClick={() => setShowRepeatModal(true)}
-          className={`h-full py-2.5 transition-all ${
-            settings.advancedMode
-              ? 'bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white shadow-md hover:shadow-lg'
-              : 'bg-green-500 hover:bg-green-600 text-white'
-          }`}
-        >
-          <FaRedo className="mr-2" /> Repeat
-        </Button>
       </div>
-
-      {/* Repeat Task Modal */}
-      <RepeatTaskModal
-        isOpen={showRepeatModal}
-        onClose={() => setShowRepeatModal(false)}
-        taskIds={[]} // Empty array for general repeat button
-        onTasksRepeated={() => {
-          setShowRepeatModal(false);
-        }}
-      />
     </div>
   );
 }

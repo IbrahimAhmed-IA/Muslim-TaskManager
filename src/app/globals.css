@@ -456,3 +456,62 @@ body, .card, .task-item, .sidebar, button, div, input, textarea, select {
     scrollbar-color: rgba(71, 85, 105, 0.8) rgba(51, 65, 85, 0.5);
   }
 }
+
+/* Widget Styles */
+.widget {
+  position: relative;
+  transition: all 0.3s ease;
+  transition: width 0.3s ease-in-out, height 0.3s ease-in-out, grid-column 0.3s ease-in-out;
+}
+
+.widget:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.widget-header {
+  cursor: default;
+  transition: background-color 0.2s ease;
+}
+
+.widget-header:hover {
+  background-color: rgba(30, 41, 59, 0.8);
+}
+
+/* Drag and Drop Styles */
+.draggable-widget {
+  user-select: none;
+  cursor: grab;
+}
+
+.draggable-widget:active {
+  cursor: grabbing;
+}
+
+.widget-drop-area {
+  transition: all 0.2s ease;
+  min-height: 100px;
+}
+
+.widget-drop-area.active {
+  background-color: rgba(37, 99, 235, 0.1);
+  border: 2px dashed rgba(37, 99, 235, 0.3);
+  border-radius: 0.5rem;
+}
+
+/* Widget Dragging Animation */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
+}
+
+.widget-dragging {
+  animation: wiggle 0.5s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+/* Widget Grid Layout */
+.widget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}

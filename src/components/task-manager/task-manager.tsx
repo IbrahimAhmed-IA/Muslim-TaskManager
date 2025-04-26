@@ -2,17 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import TaskColumn from './task-column';
 import TaskInput from './task-input';
-import ProjectManager from './project-manager';
 import { useTaskContext } from '@/context/task-context';
 import { usePomodoroContext } from '@/context/pomodoro-context';
 import { useAppSettings } from '@/context/app-settings-context';
-import type { DayOfWeek, Task } from '@/lib/types';
+import type { DayOfWeek } from '@/lib/types';
 import RepeatTaskModal from './modals/repeat-task-modal';
-import AzanTimes from '@/components/azan/azan-times';
 
 export default function TaskManager() {
   const {
@@ -32,7 +29,6 @@ export default function TaskManager() {
 
   const progressPercentage = getOverallProgress();
 
-  // Register callback to increment pomodoro count for current pomodoro task
   useEffect(() => {
     if (!onPomodoroComplete) return;
 
@@ -63,46 +59,27 @@ export default function TaskManager() {
     'saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'
   ];
 
-  // Get the current day of the week
   const getCurrentDay = (): DayOfWeek => {
     const daysMap: Record<number, DayOfWeek> = {
-      0: 'sunday',     // Sunday
-      1: 'monday',     // Monday
-      2: 'tuesday',    // Tuesday
-      3: 'wednesday',  // Wednesday
-      4: 'thursday',   // Thursday
-      5: 'friday',     // Friday
-      6: 'saturday'    // Saturday
+      0: 'sunday',
+      1: 'monday',
+      2: 'tuesday',
+      3: 'wednesday',
+      4: 'thursday',
+      5: 'friday',
+      6: 'saturday'
     };
     const dayIndex = new Date().getDay();
     return daysMap[dayIndex];
   };
 
-  // Get the current day and organize days array with current day first
   const currentDay = getCurrentDay();
 
-  // Remove current day from the days array and create a new array with remaining days
   const remainingDays = days.filter(day => day !== currentDay);
 
   return (
     <div className={`task-manager w-full fade-in ${settings.advancedMode ? 'text-white' : ''}`}>
-      {/* Header */}
-      <header className={`page-header py-10 ${settings.advancedMode ? 'bg-gradient-to-r from-blue-900 to-slate-800' : ''}`}>
-        <h1 className="text-3xl font-bold mb-1">Muslim Task Manager</h1>
-        <p className={`${settings.advancedMode ? 'text-slate-300' : 'text-white/80'}`}>
-          {settings.advancedMode ? 'Advanced Task Management with Pomodoro Integration' : 'Organize your day with purpose'}
-        </p>
-        <AzanTimes />
-      </header>
-
-      {/* Content */}
       <div className="container mx-auto p-6">
-        {/* Advanced mode features */}
-        {settings.advancedMode && (
-          <ProjectManager />
-        )}
-
-        {/* Progress Overview */}
         <div className={`card p-6 mb-8 transition-all hover:shadow-md ${settings.advancedMode ? 'bg-slate-800 border-slate-700' : ''}`}>
           <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
             <div className="flex items-center mb-4 sm:mb-0">
@@ -133,7 +110,6 @@ export default function TaskManager() {
             </div>
           </div>
 
-          {/* Task Input Form */}
           <div className={`${settings.advancedMode ? 'bg-slate-900' : 'bg-gray-50'} p-5 rounded-xl mb-6 ${settings.advancedMode ? 'border-slate-700' : 'border border-gray-100'}`}>
             <h3 className={`text-lg font-medium mb-4 ${settings.advancedMode ? 'text-slate-200' : 'text-gray-700'}`}>
               Add New Task
@@ -141,7 +117,6 @@ export default function TaskManager() {
             <TaskInput />
           </div>
 
-          {/* Task Action Buttons */}
           <div className="grid grid-cols-1 gap-3 mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Button
@@ -183,9 +158,7 @@ export default function TaskManager() {
           </div>
         </div>
 
-        {/* Day Columns */}
         <div className="grid grid-cols-1 gap-8">
-          {/* Current Day - Full Width */}
           <div key={currentDay} className="slide-up">
             <div className="mb-2">
               <span className={`font-medium ${settings.advancedMode ? 'text-white' : 'text-gray-700'}`}>
@@ -198,7 +171,6 @@ export default function TaskManager() {
             <TaskColumn day={currentDay} isCurrentDay={true} />
           </div>
 
-          {/* Other Days - 3 columns with clear separation */}
           <div className="mt-4 pt-2 border-t border-gray-200 dark:border-slate-700">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-6">
               {remainingDays.map((day, index) => (
@@ -211,7 +183,6 @@ export default function TaskManager() {
         </div>
       </div>
 
-      {/* Repeat Task Modal */}
       <RepeatTaskModal
         isOpen={showRepeatModal}
         onClose={handleRepeatModalClose}

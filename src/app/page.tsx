@@ -1,20 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import TaskManager from '@/components/task-manager/task-manager';
+import { useWeeklyScoreContext } from '@/context/weekly-score-context';
+import { useAppSettings } from '@/context/app-settings-context';
+import WidgetDashboard from '@/components/widgets/widget-dashboard';
 
-// We'll move the context usage inside a component to ensure it's used within the provider
+// Home content component that handles weekly score checking
 const HomeContent = () => {
-  // Import inside the component to avoid context issues
-  const { useWeeklyScoreContext } = require('@/context/weekly-score-context');
   const { checkWeekEnd } = useWeeklyScoreContext();
+  const { settings } = useAppSettings();
 
-  React.useEffect(() => {
+  useEffect(() => {
     checkWeekEnd();
   }, [checkWeekEnd]);
 
-  return <TaskManager />;
+  return settings.advancedMode ? <WidgetDashboard /> : <TaskManager />;
 };
 
 export default function Home() {
