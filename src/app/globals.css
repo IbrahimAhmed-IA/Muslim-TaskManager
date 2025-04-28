@@ -122,6 +122,26 @@ body.mode-transition {
   animation: modeTransition 0.8s ease-in-out;
 }
 
+/* Added for logo animation on homepage */
+@keyframes ping-slow {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 3s ease-in-out infinite;
+}
+
 /* Advanced Theme Styles */
 body.theme-advanced {
   background-color: var(--advanced-background);
@@ -315,16 +335,19 @@ body, .card, .task-item, .sidebar, button, div, input, textarea, select {
 /* Cards and UI Components */
 .card {
   @apply bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 16px 0 rgba(var(--primary-rgb), 0.07), 0 2px 4px -1px rgba(0,0,0,0.03);
+  position: relative;
 }
 
 .card:hover {
   @apply shadow-md;
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 32px 0 rgba(var(--primary-rgb), 0.13), 0 4px 8px -1px rgba(0,0,0,0.07);
 }
 
 .card-header {
   @apply p-5 border-b border-gray-100;
+  background: linear-gradient(90deg, rgba(139,92,246,0.06) 0%, rgba(168,85,247,0.03) 100%);
 }
 
 .card-body {
@@ -334,7 +357,7 @@ body, .card, .task-item, .sidebar, button, div, input, textarea, select {
 /* Header Styles */
 .page-header {
   @apply py-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center mb-8;
-  box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb), 0.3);
+  box-shadow: 0 4px 16px -1px rgba(var(--primary-rgb), 0.22);
   position: relative;
   overflow: hidden;
 }
@@ -429,7 +452,121 @@ body, .card, .task-item, .sidebar, button, div, input, textarea, select {
   }
 }
 
+/* Enhanced UI Styles - Added for modern redesign */
 @layer components {
+  /* Modern Glassmorphism Effects */
+  .glass-card {
+    @apply bg-white/90 backdrop-blur-lg border border-white/20 shadow-xl;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  .theme-advanced .glass-card {
+    @apply bg-slate-800/90 backdrop-blur-lg border border-slate-700/50;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Enhanced page headers with geometric patterns */
+  .enhanced-header {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #8b5cf6 100%);
+  }
+
+  .enhanced-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 20%),
+      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.2) 0%, transparent 20%);
+    opacity: 0.8;
+    z-index: 0;
+  }
+
+  /* Advanced mode header */
+  .theme-advanced .enhanced-header {
+    background: linear-gradient(135deg, #1e40af 0%, #3730a3 50%, #4338ca 100%);
+  }
+
+  /* Modern card styles */
+  .modern-card {
+    @apply rounded-xl overflow-hidden transition-all duration-300 border border-gray-100;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05),
+                0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  }
+
+  .modern-card:hover {
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1),
+                0 10px 15px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-3px);
+  }
+
+  .theme-advanced .modern-card {
+    @apply border-slate-700 bg-slate-800;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25),
+                0 8px 10px -6px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Pomodoro timer enhancements */
+  .timer-display {
+    @apply text-center relative overflow-hidden rounded-full p-6 flex items-center justify-center;
+    background: conic-gradient(from 0deg, #9f7aea 0%, transparent 100%);
+  }
+
+  .timer-display::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    background: white;
+    border-radius: 50%;
+    z-index: 0;
+  }
+
+  .theme-advanced .timer-display::before {
+    background: #1e293b;
+  }
+
+  .timer-display span {
+    @apply relative z-10;
+  }
+
+  /* Note section styling */
+  .note-section-tag {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-2;
+    background-color: rgba(var(--primary-rgb), 0.1);
+    color: rgba(var(--primary-rgb), 1);
+  }
+
+  .theme-advanced .note-section-tag {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+  }
+
+  /* Animated buttons */
+  .animate-btn {
+    @apply relative overflow-hidden;
+  }
+
+  .animate-btn::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: -100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: all 0.6s ease;
+  }
+
+  .animate-btn:hover::after {
+    left: 100%;
+  }
+
   /* Custom scrollbar for advanced mode */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -514,4 +651,221 @@ body, .card, .task-item, .sidebar, button, div, input, textarea, select {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
+}
+
+/* Notes Related Styles */
+.note-card {
+  @apply transition-all duration-300 rounded-xl overflow-hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.note-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.note-toolbar {
+  @apply flex items-center space-x-1 p-1 rounded-t-md border-b bg-gray-50;
+}
+
+.note-toolbar button {
+  @apply rounded-md text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors;
+}
+
+/* Note editor enhancements */
+.note-editor textarea {
+  @apply outline-none focus:ring-2 focus:ring-purple-300 transition-all resize-y;
+  min-height: 250px;
+  line-height: 1.6;
+}
+
+/* Note Animation */
+@keyframes noteSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.note-list-item {
+  animation: noteSlideIn 0.3s ease-out forwards;
+}
+
+/* Staggered animation for multiple notes */
+.notes-list > div:nth-child(1) { animation-delay: 0.05s; }
+.notes-list > div:nth-child(2) { animation-delay: 0.1s; }
+.notes-list > div:nth-child(3) { animation-delay: 0.15s; }
+.notes-list > div:nth-child(4) { animation-delay: 0.2s; }
+.notes-list > div:nth-child(5) { animation-delay: 0.25s; }
+.notes-list > div:nth-child(6) { animation-delay: 0.3s; }
+
+/* Advanced mode dark theme note styles */
+.theme-advanced .note-toolbar {
+  @apply bg-slate-800 border-slate-700;
+}
+
+.theme-advanced .note-toolbar button {
+  @apply text-gray-300 hover:bg-slate-700 hover:text-white;
+}
+
+.theme-advanced .note-editor textarea {
+  @apply bg-slate-800 border-slate-700 text-white;
+  caret-color: #60a5fa;
+}
+
+.theme-advanced .note-editor input {
+  @apply bg-slate-800 border-slate-700 text-white;
+  caret-color: #60a5fa;
+}
+
+/* Advanced Custom UI Components */
+.advanced-btn {
+  @apply px-4 py-2 rounded-lg transition-all duration-300;
+  background: linear-gradient(90deg, rgba(30, 58, 138, 0.8) 0%, rgba(37, 99, 235, 0.8) 100%);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+}
+
+.advanced-btn:hover {
+  background: linear-gradient(90deg, rgba(30, 64, 175, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  transform: translateY(-1px);
+}
+
+.advanced-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 4px rgba(30, 58, 138, 0.4);
+}
+
+/* Animation for note actions */
+@keyframes pulseScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.pulse-animation {
+  animation: pulseScale 0.3s ease-in-out;
+}
+
+/* Notion-like Styles */
+.notion-like-container {
+  --notion-bg-white: #ffffff;
+  --notion-bg-dark: #191919;
+  --notion-gray-50: #f7f7f7;
+  --notion-gray-100: #efefef;
+  --notion-gray-200: #e0e0e0;
+  --notion-gray-300: #c9c9c9;
+  --notion-gray-500: #aaa;
+  --notion-text-dark: #37352f;
+  --notion-text-light: #ffffff;
+  --notion-text-gray: #9b9a97;
+}
+
+.notion-editor {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.notion-editor input:focus,
+.notion-editor textarea:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.notion-sidebar {
+  background-color: var(--notion-gray-50);
+  transition: width 0.2s ease-in-out;
+}
+
+.theme-advanced .notion-sidebar {
+  background-color: var(--notion-bg-dark);
+}
+
+.notion-like-container .notes-list > div {
+  counter-reset: notion-counter;
+}
+
+.theme-advanced .notion-like-container input,
+.theme-advanced .notion-like-container textarea {
+  background-color: var(--notion-bg-dark);
+  color: var(--notion-text-light);
+}
+
+.notion-like-container textarea {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
+  line-height: 1.6;
+}
+
+/* Notion-like placeholder animation */
+.notion-editor textarea::placeholder {
+  transition: color 0.2s ease;
+}
+
+.notion-editor textarea:focus::placeholder {
+  color: #b8b8b8;
+}
+
+/* Notion-like block hover effect */
+.notion-editor p, .notion-editor h1, .notion-editor h2, .notion-editor h3 {
+  padding: 3px 2px;
+  margin: 2px 0;
+  border-radius: 3px;
+}
+
+.notion-editor p:hover, .notion-editor h1:hover, .notion-editor h2:hover, .notion-editor h3:hover {
+  background-color: rgba(55, 53, 47, 0.08);
+}
+
+.theme-advanced .notion-editor p:hover,
+.theme-advanced .notion-editor h1:hover,
+.theme-advanced .notion-editor h2:hover,
+.theme-advanced .notion-editor h3:hover {
+  background-color: rgba(255, 255, 255, 0.055);
+}
+
+/* Notion-like editor toolbar */
+.notion-toolbar {
+  display: flex;
+  padding: 6px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: rgba(15, 15, 15, 0.1) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 2px 4px;
+  position: absolute;
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notion-toolbar.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.theme-advanced .notion-toolbar {
+  background-color: var(--notion-bg-dark);
+  box-shadow: rgba(255, 255, 255, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.3) 0px 2px 4px;
+}
+
+/* Command menu like Notion's slash menu */
+.slash-menu {
+  position: absolute;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: rgba(15, 15, 15, 0.1) 0px 0px 0px 1px, rgba(15, 15, 15, 0.2) 0px 3px 6px, rgba(15, 15, 15, 0.1) 0px 9px 24px;
+  min-width: 180px;
+  max-width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.theme-advanced .slash-menu {
+  background-color: #292929;
+  box-shadow: rgba(255, 255, 255, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.3) 0px 2px 4px;
 }

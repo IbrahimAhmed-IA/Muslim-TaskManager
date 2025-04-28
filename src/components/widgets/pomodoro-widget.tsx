@@ -1,163 +1,331 @@
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { FaPlay, FaPause, FaRedo, FaForward } from 'react-icons/fa';
-import { usePomodoroContext } from '@/context/pomodoro-context';
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useAppSettings } from "@/context/app-settings-context";
+import { usePomodoroContext } from "@/context/pomodoro-context";
+import { useTaskContext } from "@/context/task-context";
+import Link from "next/link";
+import {
+  FaPause, FaPlay, FaRedo, FaForward, FaClock,
+  FaCheck, FaHeadphones, FaEllipsisH
+} from "react-icons/fa";
+
+interface Task {
+  currentPomodoroTask?: boolean;
+  title: string;
+  pomodoroEstimate?: number;
+  pomodorosCompleted?: number;
+}
 
 export default function PomodoroWidget() {
   const {
     isRunning,
-    timeLeft,
     timerType,
-    completedPomodoros,
+    timeLeft,
     startTimer,
     pauseTimer,
     resetTimer,
     skipTimer,
+    settings,
+    completedPomodoros,
   } = usePomodoroContext();
 
-  const [progress, setProgress] = useState(100);
-  const [timerDisplay, setTimerDisplay] = useState('25:00');
+  const { tasks } = useTaskContext();
+  const { settings: appSettings } = useAppSettings();
+  const isAdvancedMode = appSettings.advancedMode;
 
-  // Calculate progress and format time left
-  useEffect(() => {
-    // Calculate max time for current timer type
-    let maxTime = 0;
+  // Find current pomodoro task if any
+  const currentTask = tasks.find((task): task is Task => !!task.currentPomodoroTask);
+
+  // Format time as mm:ss
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  // Calculate progress percentage
+  const calculateProgress = () => {
+    let totalTime = 0;
+
     switch (timerType) {
-      case 'work':
-        maxTime = 25 * 60; // Default 25 minutes
+      case "work":
+        totalTime = settings.workDuration * 60;
         break;
-      case 'shortBreak':
-        maxTime = 5 * 60; // Default 5 minutes
+      case "shortBreak":
+        totalTime = settings.shortBreakDuration * 60;
         break;
-      case 'longBreak':
-        maxTime = 15 * 60; // Default 15 minutes
+      case "longBreak":
+        totalTime = settings.longBreakDuration * 60;
         break;
     }
 
-    // Calculate progress percentage
-    const progressPercentage = (timeLeft / maxTime) * 100;
-    setProgress(progressPercentage);
+    return ((totalTime - timeLeft) / totalTime) * 100;
+  };
 
-    // Format time left as MM:SS
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    setTimerDisplay(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-  }, [timeLeft, timerType]);
-
-  // Get color for timer type
-  const getTimerColor = () => {
+  // Get timer type label
+  const getTimerTypeLabel = () => {
     switch (timerType) {
-      case 'work':
-        return 'from-red-600 to-rose-600';
-      case 'shortBreak':
-        return 'from-green-600 to-teal-600';
-      case 'longBreak':
-        return 'from-blue-600 to-indigo-600';
-      default:
-        return 'from-gray-600 to-slate-600';
+      case "work":
+        return "Focus";
+      case "shortBreak":
+        return "Short Break";
+      case "longBreak":
+        return "Long Break";
     }
   };
 
+  // Get icon based on timer type
+  const getTimerIcon = () => {
+    switch (timerType) {
+      case "work":
+        return <FaClock className="mr-1.5" />;
+      case "shortBreak":
+        return <FaCheck className="mr-1.5" />;
+      case "longBreak":
+        return <FaHeadphones className="mr-1.5" />;
+    }
+  };
+
+  // Get color based on timer type
+  const getTimerColor = () => {
+    switch (timerType) {
+      case "work":
+        return isAdvancedMode
+          ? "text-indigo-400 border-indigo-600/50"
+          : "text-indigo-600 border-indigo-200";
+      case "shortBreak":
+        return isAdvancedMode
+          ? "text-emerald-400 border-emerald-600/50"
+          : "text-emerald-600 border-emerald-200";
+      case "longBreak":
+        return isAdvancedMode
+          ? "text-blue-400 border-blue-600/50"
+          : "text-blue-600 border-blue-200";
+    }
+  };
+
+  const getProgressColor = () => {
+    switch (timerType) {
+      case "work":
+        return isAdvancedMode
+          ? "bg-indigo-600"
+          : "bg-indigo-500";
+      case "shortBreak":
+        return isAdvancedMode
+          ? "bg-emerald-600"
+          : "bg-emerald-500";
+      case "longBreak":
+        return isAdvancedMode
+          ? "bg-blue-600"
+          : "bg-blue-500";
+    }
+  };
+
+  const getButtonColor = () => {
+    switch (timerType) {
+      case "work":
+        return isAdvancedMode
+          ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+          : "bg-indigo-600 hover:bg-indigo-700 text-white";
+      case "shortBreak":
+        return isAdvancedMode
+          ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+          : "bg-emerald-600 hover:bg-emerald-700 text-white";
+      case "longBreak":
+        return isAdvancedMode
+          ? "bg-blue-600 hover:bg-blue-700 text-white"
+          : "bg-blue-600 hover:bg-blue-700 text-white";
+    }
+  };
+
+  // Calculate stroke dash array for circular progress
+  const calculateStrokeDashArray = () => {
+    const radius = 45;
+    const circumference = 2 * Math.PI * radius;
+    const dashArray = circumference;
+    const dashOffset = circumference * (1 - calculateProgress() / 100);
+
+    return {
+      strokeDasharray: `${dashArray}`,
+      strokeDashoffset: `${dashOffset}`,
+    };
+  };
+
+  const { strokeDasharray, strokeDashoffset } = calculateStrokeDashArray();
+
   return (
-    <div className="w-full h-full flex flex-col justify-between">
-      {/* Timer Type */}
-      <div className="text-center mb-2">
-        <span className="text-xs uppercase tracking-wider font-medium text-slate-400 py-1 px-3 rounded-full bg-slate-700">
-          {timerType === 'work' ? 'Focus' : timerType === 'shortBreak' ? 'Short Break' : 'Long Break'}
-        </span>
+    <div className={`flex flex-col items-center p-4 rounded-xl ${
+      isAdvancedMode
+        ? 'bg-slate-800/30 backdrop-blur-sm'
+        : 'bg-white/50 backdrop-blur-sm border border-gray-100/30'
+    }`}>
+      {/* Timer Type Pill */}
+      <div className={`inline-flex items-center px-3.5 py-1.5 rounded-full text-sm mb-5 ${getTimerColor()} ${
+        isAdvancedMode
+          ? 'bg-opacity-20 bg-current'
+          : 'bg-opacity-10 bg-current'
+      }`}>
+        {getTimerIcon()}
+        <span className="font-medium">{getTimerTypeLabel()}</span>
+        {completedPomodoros > 0 && (
+          <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
+            isAdvancedMode
+              ? 'bg-slate-700/80'
+              : 'bg-white/80 shadow-sm'
+          }`}>
+            {completedPomodoros}
+          </span>
+        )}
       </div>
 
-      {/* Timer Display */}
-      <div className="flex items-center justify-center my-4">
-        <div className="relative w-32 h-32">
-          <svg className="w-full h-full" viewBox="0 0 100 100">
-            {/* Background circle */}
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="#374151"
-              strokeWidth="8"
-            />
+      {/* Timer Display with Circular Progress */}
+      <div className="relative mb-6 flex items-center justify-center">
+        <div
+          className={`absolute w-36 h-36 rounded-full ${
+            isAdvancedMode
+              ? 'bg-slate-700/40'
+              : 'bg-gray-100/40'
+          }`}
+        />
+        <svg className="w-36 h-36 -rotate-90 relative z-10">
+          <circle
+            cx="72"
+            cy="72"
+            r="45"
+            fill="none"
+            stroke={isAdvancedMode ? "rgba(30, 41, 59, 0.6)" : "rgba(241, 245, 249, 0.6)"}
+            strokeWidth="10"
+            className="opacity-40"
+          />
+          <circle
+            cx="72"
+            cy="72"
+            r="45"
+            fill="none"
+            className={`transition-all duration-1000 ease-linear ${getProgressColor()}`}
+            strokeWidth="10"
+            strokeLinecap="round"
+            style={{ strokeDasharray, strokeDashoffset }}
+          />
+        </svg>
 
-            {/* Progress circle */}
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke={`url(#${timerType}Gradient)`}
-              strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray={`${2 * Math.PI * 45}`}
-              strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress / 100)}`}
-              transform="rotate(-90 50 50)"
-            />
-
-            {/* Gradients */}
-            <defs>
-              <linearGradient id="workGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#dc2626" />
-                <stop offset="100%" stopColor="#e11d48" />
-              </linearGradient>
-              <linearGradient id="shortBreakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#16a34a" />
-                <stop offset="100%" stopColor="#0d9488" />
-              </linearGradient>
-              <linearGradient id="longBreakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#2563eb" />
-                <stop offset="100%" stopColor="#4f46e5" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          {/* Timer text */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-3xl font-bold text-white">{timerDisplay}</span>
+        <div className="absolute inset-0 flex items-center justify-center z-20">
+          <div className="text-center">
+            <span className={`text-4xl font-bold tracking-wide ${
+              isAdvancedMode
+                ? "text-white"
+                : "text-gray-800"
+            }`}>
+              {formatTime(timeLeft)}
+            </span>
           </div>
         </div>
       </div>
 
+      {/* Current Task (if any) */}
+      {currentTask && timerType === "work" && (
+        <div className={`w-full px-4 py-3 mb-5 rounded-lg text-sm ${
+          isAdvancedMode
+            ? "bg-slate-700/60 border border-slate-600/40"
+            : "bg-white/90 border border-gray-200/70 shadow-sm"
+        }`}>
+          <p className={`${
+            isAdvancedMode
+              ? "text-gray-300"
+              : "text-gray-600"
+            } font-medium text-xs mb-1.5`}>
+            Current Task:
+          </p>
+          <p className={`${
+            isAdvancedMode
+              ? "text-white"
+              : "text-gray-800"
+            } truncate font-medium`}>
+            {currentTask.title}
+          </p>
+          {typeof currentTask.pomodoroEstimate === "number" && currentTask.pomodoroEstimate > 0 && (
+            <div className="flex items-center mt-3">
+              <div className="flex-1">
+                <Progress
+                  value={(currentTask.pomodorosCompleted || 0) / currentTask.pomodoroEstimate * 100}
+                  className={`h-1.5 ${
+                    isAdvancedMode
+                      ? "bg-slate-600/50"
+                      : "bg-gray-100"
+                  }`}
+                />
+              </div>
+              <span className={`text-xs ml-2 font-medium ${
+                isAdvancedMode
+                  ? "text-gray-300"
+                  : "text-gray-500"
+              }`}>
+                {currentTask.pomodorosCompleted || 0}/{currentTask.pomodoroEstimate}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Controls */}
-      <div className="flex justify-center space-x-2 mt-4">
-        {/* Start/Pause Button */}
-        <Button
-          onClick={isRunning ? pauseTimer : startTimer}
-          className={`h-10 w-10 rounded-full p-0 ${
-            isRunning
-              ? 'bg-amber-600 hover:bg-amber-700'
-              : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
-          }`}
-          title={isRunning ? 'Pause' : 'Start'}
-        >
-          {isRunning ? <FaPause size={14} /> : <FaPlay size={14} />}
-        </Button>
+      <div className="flex items-center gap-3 mb-4">
+        {isRunning ? (
+          <Button
+            onClick={pauseTimer}
+            className={`${getButtonColor()} px-5 py-2 rounded-full shadow-md h-auto`}
+          >
+            <FaPause className="mr-1.5" size={12} /> Pause
+          </Button>
+        ) : (
+          <Button
+            onClick={startTimer}
+            className={`${getButtonColor()} px-5 py-2 rounded-full shadow-md h-auto`}
+          >
+            <FaPlay className="mr-1.5" size={12} /> Start
+          </Button>
+        )}
 
-        {/* Reset Button */}
-        <Button
-          onClick={resetTimer}
-          className="h-10 w-10 rounded-full p-0 bg-slate-700 hover:bg-slate-600"
-          title="Reset"
-        >
-          <FaRedo size={14} />
-        </Button>
-
-        {/* Skip Button */}
-        <Button
-          onClick={skipTimer}
-          className="h-10 w-10 rounded-full p-0 bg-slate-700 hover:bg-slate-600"
-          title="Skip"
-        >
-          <FaForward size={14} />
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            onClick={resetTimer}
+            variant={isAdvancedMode ? "secondary" : "outline"}
+            size="icon"
+            className={`h-10 w-10 rounded-full shadow-sm ${
+              isAdvancedMode
+                ? "border-slate-600/50 text-slate-300 hover:bg-slate-700/60 bg-slate-800/60"
+                : "border-gray-200 text-gray-500 hover:bg-gray-50/80"
+            }`}
+          >
+            <FaRedo size={14} />
+          </Button>
+          <Button
+            onClick={skipTimer}
+            variant={isAdvancedMode ? "secondary" : "outline"}
+            size="icon"
+            className={`h-10 w-10 rounded-full shadow-sm ${
+              isAdvancedMode
+                ? "border-slate-600/50 text-slate-300 hover:bg-slate-700/60 bg-slate-800/60"
+                : "border-gray-200 text-gray-500 hover:bg-gray-50/80"
+            }`}
+          >
+            <FaForward size={14} />
+          </Button>
+        </div>
       </div>
 
-      {/* Pomodoros Completed */}
-      <div className="text-center mt-4">
-        <span className="text-xs text-slate-400">Completed: {completedPomodoros}</span>
-      </div>
+      {/* View Full Timer Link */}
+      <Link
+        href="/pomodoro"
+        className={`text-sm py-1.5 px-3 rounded-md transition-colors ${
+          isAdvancedMode
+            ? "text-blue-400 hover:bg-blue-900/30"
+            : "text-indigo-600 hover:bg-indigo-50/80 font-medium"
+        }`}
+      >
+        View full timer
+      </Link>
     </div>
   );
 }

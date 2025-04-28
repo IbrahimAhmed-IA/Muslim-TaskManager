@@ -1,10 +1,10 @@
-import type React from 'react';
-import { TaskProvider } from '@/context/task-context';
-import { NoteProvider } from '@/context/note-context';
-import { PomodoroProvider } from '@/context/pomodoro-context';
-import { WeeklyScoreProvider } from '@/context/weekly-score-context';
-import { AppSettingsProvider } from '@/context/app-settings-context';
-import { ProjectProvider } from '@/context/project-context';
+import { AppSettingsProvider } from "@/context/app-settings-context";
+import { NoteProvider } from "@/context/note-context";
+import { PomodoroProvider } from "@/context/pomodoro-context";
+import { ProjectProvider } from "@/context/project-context";
+import { TaskProvider } from "@/context/task-context";
+import { WeeklyScoreProvider } from "@/context/weekly-score-context";
+import type React from "react";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -17,9 +17,7 @@ export default function Providers({ children }: ProvidersProps) {
         <TaskProvider>
           <NoteProvider>
             <PomodoroProvider>
-              <WeeklyScoreProvider>
-                {children}
-              </WeeklyScoreProvider>
+              <WeeklyScoreProvider>{children}</WeeklyScoreProvider>
             </PomodoroProvider>
           </NoteProvider>
         </TaskProvider>

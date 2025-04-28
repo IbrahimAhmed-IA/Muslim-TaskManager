@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import MainLayout from '@/components/layout/main-layout';
-import TaskManager from '@/components/task-manager/task-manager';
-import { useWeeklyScoreContext } from '@/context/weekly-score-context';
-import { useAppSettings } from '@/context/app-settings-context';
-import WidgetDashboard from '@/components/widgets/widget-dashboard';
+import MainLayout from "@/components/layout/main-layout";
+import TaskManager from "@/components/task-manager/task-manager";
+import WidgetDashboard from "@/components/widgets/widget-dashboard";
+import { useAppSettings } from "@/context/app-settings-context";
+import { useWeeklyScoreContext } from "@/context/weekly-score-context";
+import React, { useEffect } from "react";
 
 // Home content component that handles weekly score checking
 const HomeContent = () => {
@@ -16,7 +16,11 @@ const HomeContent = () => {
     checkWeekEnd();
   }, [checkWeekEnd]);
 
-  return settings.advancedMode ? <WidgetDashboard /> : <TaskManager />;
+  return (
+    <div className="main-content p-6 fade-in">
+      {settings.advancedMode ? <WidgetDashboard /> : <TaskManager />}
+    </div>
+  );
 };
 
 export default function Home() {

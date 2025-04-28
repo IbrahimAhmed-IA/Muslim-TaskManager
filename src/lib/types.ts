@@ -1,6 +1,13 @@
-export type DayOfWeek = 'saturday' | 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday';
+export type DayOfWeek =
+  | "saturday"
+  | "sunday"
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday";
 
-export type Priority = 'low' | 'medium' | 'high';
+export type Priority = "low" | "medium" | "high";
 
 // Define effort weights for each priority level
 export const EffortWeights: Record<Priority, number> = {
@@ -41,6 +48,8 @@ export interface Note {
   createdAt: Date;
   updatedAt: Date;
   projectId?: string;
+  section?: string; // Simple text section/tag
+  categoryId?: string; // Reference to category object
 }
 
 export interface WeeklyScore {

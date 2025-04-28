@@ -1,9 +1,14 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import type React from 'react';
-import { getWeeklyScores, saveWeeklyScores, addWeeklyScore, resetPomodoroCount } from '@/lib/storage';
-import { useTaskContext } from './task-context';
-import { usePomodoroContext } from './pomodoro-context';
-import type { WeeklyScore } from '@/lib/types';
+import {
+  addWeeklyScore,
+  getWeeklyScores,
+  resetPomodoroCount,
+  saveWeeklyScores,
+} from "@/lib/storage";
+import type { WeeklyScore } from "@/lib/types";
+import { createContext, useContext, useEffect, useState } from "react";
+import type React from "react";
+import { usePomodoroContext } from "./pomodoro-context";
+import { useTaskContext } from "./task-context";
 
 interface WeeklyScoreContextType {
   weeklyScores: WeeklyScore[];
@@ -17,14 +22,18 @@ const WeeklyScoreContext = createContext<WeeklyScoreContextType | null>(null);
 export const useWeeklyScoreContext = () => {
   const context = useContext(WeeklyScoreContext);
   if (!context) {
-    throw new Error('useWeeklyScoreContext must be used within a WeeklyScoreProvider');
+    throw new Error(
+      "useWeeklyScoreContext must be used within a WeeklyScoreProvider",
+    );
   }
   return context;
 };
 
-export const WeeklyScoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const WeeklyScoreProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [weeklyScores, setWeeklyScores] = useState<WeeklyScore[]>([]);
-  const [lastCheckedWeek, setLastCheckedWeek] = useState<string>('');
+  const [lastCheckedWeek, setLastCheckedWeek] = useState<string>("");
   const { getOverallProgress, uncheckAllTasks } = useTaskContext();
   const { pomodoroCount } = usePomodoroContext();
 
@@ -37,7 +46,9 @@ export const WeeklyScoreProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const getCurrentWeekNumber = (): number => {
     const now = new Date();
     const onejan = new Date(now.getFullYear(), 0, 1);
-    return Math.ceil(((now.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7);
+    return Math.ceil(
+      ((now.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7,
+    );
   };
 
   // Get current year
@@ -71,11 +82,11 @@ export const WeeklyScoreProvider: React.FC<{ children: React.ReactNode }> = ({ c
         year: year,
         completionPercentage: getOverallProgress(),
         pomodoroCount: pomodoroCount,
-        endDate: new Date().toISOString()
+        endDate: new Date().toISOString(),
       };
 
       addWeeklyScore(newWeeklyScore);
-      setWeeklyScores(prevScores => [...prevScores, newWeeklyScore]);
+      setWeeklyScores((prevScores) => [...prevScores, newWeeklyScore]);
 
       // Reset tasks and pomodoro count for the new week
       uncheckAllTasks();
@@ -92,7 +103,7 @@ export const WeeklyScoreProvider: React.FC<{ children: React.ReactNode }> = ({ c
         weeklyScores,
         checkWeekEnd,
         getCurrentWeekNumber,
-        getCurrentYear
+        getCurrentYear,
       }}
     >
       {children}

@@ -1,16 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import MainLayout from '@/components/layout/main-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { FaChartLine, FaClock, FaCalendarAlt, FaMedal } from 'react-icons/fa';
+import MainLayout from "@/components/layout/main-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import React from "react";
+import { FaCalendarAlt, FaChartLine, FaClock, FaMedal } from "react-icons/fa";
 
 // Component that uses the context
 const MithaqContent = () => {
   // Import inside the component to avoid context issues
-  const { useWeeklyScoreContext } = require('@/context/weekly-score-context');
-  const { weeklyScores, checkWeekEnd, getCurrentWeekNumber, getCurrentYear } = useWeeklyScoreContext();
+  const { useWeeklyScoreContext } = require("@/context/weekly-score-context");
+  const { weeklyScores, checkWeekEnd, getCurrentWeekNumber, getCurrentYear } =
+    useWeeklyScoreContext();
 
   React.useEffect(() => {
     checkWeekEnd();
@@ -38,7 +39,9 @@ const MithaqContent = () => {
               <FaCalendarAlt className="text-white text-lg" />
             </div>
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800">Current Week</h2>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Current Week
+              </h2>
               <p className="text-gray-500">
                 Week {getCurrentWeekNumber()} of {getCurrentYear()}
               </p>
@@ -52,8 +55,12 @@ const MithaqContent = () => {
                   <FaChartLine className="text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-blue-800">Weekly Progress</h3>
-                  <p className="text-sm text-blue-600">Track your task completions</p>
+                  <h3 className="text-lg font-medium text-blue-800">
+                    Weekly Progress
+                  </h3>
+                  <p className="text-sm text-blue-600">
+                    Track your task completions
+                  </p>
                 </div>
               </div>
             </div>
@@ -64,8 +71,12 @@ const MithaqContent = () => {
                   <FaClock className="text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-purple-800">Pomodoro Stats</h3>
-                  <p className="text-sm text-purple-600">Track your focused time</p>
+                  <h3 className="text-lg font-medium text-purple-800">
+                    Pomodoro Stats
+                  </h3>
+                  <p className="text-sm text-purple-600">
+                    Track your focused time
+                  </p>
                 </div>
               </div>
             </div>
@@ -76,8 +87,12 @@ const MithaqContent = () => {
                   <FaMedal className="text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-amber-800">Achievements</h3>
-                  <p className="text-sm text-amber-600">Unlock weekly rewards</p>
+                  <h3 className="text-lg font-medium text-amber-800">
+                    Achievements
+                  </h3>
+                  <p className="text-sm text-amber-600">
+                    Unlock weekly rewards
+                  </p>
                 </div>
               </div>
             </div>
@@ -94,9 +109,14 @@ const MithaqContent = () => {
               >
                 <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
                   <CardTitle className="flex justify-between items-center">
-                    <span>Week {score.weekNumber}, {score.year}</span>
+                    <span>
+                      Week {score.weekNumber}, {score.year}
+                    </span>
                     <span className="text-sm bg-white/20 px-3 py-1 rounded-full">
-                      {new Date(score.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      {new Date(score.endDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </span>
                   </CardTitle>
                 </CardHeader>
@@ -104,17 +124,21 @@ const MithaqContent = () => {
                   <div className="space-y-6">
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm font-medium text-gray-700">Task Completion</p>
-                        <span className="text-sm font-bold text-indigo-600">{score.completionPercentage}%</span>
+                        <p className="text-sm font-medium text-gray-700">
+                          Task Completion
+                        </p>
+                        <span className="text-sm font-bold text-indigo-600">
+                          {score.completionPercentage}%
+                        </span>
                       </div>
                       <div className="h-2.5 bg-gray-100 rounded-full">
                         <div
                           className={`h-full rounded-full bg-gradient-to-r ${
                             score.completionPercentage > 75
-                              ? 'from-green-500 to-emerald-500'
+                              ? "from-green-500 to-emerald-500"
                               : score.completionPercentage > 50
-                                ? 'from-blue-500 to-indigo-500'
-                                : 'from-amber-500 to-orange-500'
+                                ? "from-blue-500 to-indigo-500"
+                                : "from-amber-500 to-orange-500"
                           }`}
                           style={{ width: `${score.completionPercentage}%` }}
                         ></div>
@@ -123,8 +147,12 @@ const MithaqContent = () => {
 
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-1">Pomodoros</p>
-                        <p className="text-2xl font-bold text-indigo-600">{score.pomodoroCount}</p>
+                        <p className="text-sm font-medium text-gray-700 mb-1">
+                          Pomodoros
+                        </p>
+                        <p className="text-2xl font-bold text-indigo-600">
+                          {score.pomodoroCount}
+                        </p>
                       </div>
 
                       <div className="flex items-center h-14 w-14 bg-indigo-50 rounded-full justify-center">
@@ -134,11 +162,12 @@ const MithaqContent = () => {
 
                     <div className="pt-3 border-t border-gray-100">
                       <p className="text-xs text-gray-500 flex justify-end">
-                        Tracked on {new Date(score.endDate).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
+                        Tracked on{" "}
+                        {new Date(score.endDate).toLocaleDateString("en-US", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
                         })}
                       </p>
                     </div>
@@ -152,10 +181,12 @@ const MithaqContent = () => {
             <div className="inline-flex p-6 rounded-full bg-gray-50 mb-5">
               <FaChartLine className="text-indigo-500 text-3xl" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-3">No weekly records yet</h3>
+            <h3 className="text-xl font-semibold text-gray-700 mb-3">
+              No weekly records yet
+            </h3>
             <p className="text-gray-500 max-w-lg mx-auto">
-              Your progress will be tracked and displayed here at the end of each week.
-              Weekly records are saved after Friday at 12:00 AM.
+              Your progress will be tracked and displayed here at the end of
+              each week. Weekly records are saved after Friday at 12:00 AM.
             </p>
           </div>
         )}

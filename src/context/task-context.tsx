@@ -1,16 +1,28 @@
-import type React from 'react';
-import { createContext, useContext, useState, useEffect } from 'react';
-import { type Task, type DayOfWeek, type Priority, type SubTask, EffortWeights } from '@/lib/types';
-import { getTasks, saveTasks } from '@/lib/storage';
-import { toast } from 'sonner';
-import { usePomodoroContext } from './pomodoro-context';
+import { getTasks, saveTasks } from "@/lib/storage";
+import {
+  type DayOfWeek,
+  EffortWeights,
+  type Priority,
+  type SubTask,
+  type Task,
+} from "@/lib/types";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { usePomodoroContext } from "./pomodoro-context";
 
 interface TaskContextType {
   tasks: Task[];
-  addTask: (title: string, day: DayOfWeek, priority: Priority, pomodoroEstimate?: number, projectId?: string) => void;
+  addTask: (
+    title: string,
+    day: DayOfWeek,
+    priority: Priority,
+    pomodoroEstimate?: number,
+    projectId?: string,
+  ) => void;
   toggleTask: (id: string) => void;
   deleteTask: (id: string) => void;
-  editTask: (id: string, updates: Partial<Omit<Task, 'id'>>) => void;
+  editTask: (id: string, updates: Partial<Omit<Task, "id">>) => void;
   copyTasks: (taskIds: string[], targetDay: DayOfWeek) => void;
   uncheckAllTasks: () => void;
   sortTasks: () => void;
@@ -34,12 +46,14 @@ const TaskContext = createContext<TaskContextType | null>(null);
 export const useTaskContext = () => {
   const context = useContext(TaskContext);
   if (!context) {
-    throw new Error('useTaskContext must be used within a TaskProvider');
+    throw new Error("useTaskContext must be used within a TaskProvider");
   }
   return context;
 };
 
-export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
 
@@ -54,9 +68,15 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveTasks(tasks);
   }, [tasks]);
 
-  const addTask = (title: string, day: DayOfWeek, priority: Priority, pomodoroEstimate?: number, projectId?: string) => {
+  const addTask = (
+    title: string,
+    day: DayOfWeek,
+    priority: Priority,
+    pomodoroEstimate?: number,
+    projectId?: string,
+  ) => {
     if (!title.trim()) {
-      toast.error('Task title cannot be empty');
+      toast.error("Task title cannot be empty");
       return;
     }
 
@@ -74,7 +94,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setTasks((prevTasks) => [...prevTasks, newTask]);
-    toast.success('Task added successfully');
+    toast.success("Task added successfully");
   };
 
   const toggleTask = (id: string) => {
@@ -84,36 +104,38 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // If toggling to complete and the task has subtasks, also mark all subtasks as completed
         if (!task.completed && task.subtasks && task.subtasks.length > 0) {
-          const allSubtasksComplete = task.subtasks.every(subtask => subtask.completed);
+          const allSubtasksComplete = task.subtasks.every(
+            (subtask) => subtask.completed,
+          );
           if (!allSubtasksComplete) {
             return {
               ...task,
               completed: true,
-              subtasks: task.subtasks.map(subtask => ({
+              subtasks: task.subtasks.map((subtask) => ({
                 ...subtask,
-                completed: true
-              }))
+                completed: true,
+              })),
             };
           }
         }
 
         return { ...task, completed: !task.completed };
-      })
+      }),
     );
   };
 
   const deleteTask = (id: string) => {
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
-    toast.success('Task deleted');
+    toast.success("Task deleted");
   };
 
-  const editTask = (id: string, updates: Partial<Omit<Task, 'id'>>) => {
+  const editTask = (id: string, updates: Partial<Omit<Task, "id">>) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.id === id ? { ...task, ...updates } : task
-      )
+        task.id === id ? { ...task, ...updates } : task,
+      ),
     );
-    toast.success('Task updated');
+    toast.success("Task updated");
   };
 
   const copyTasks = (taskIds: string[], targetDay: DayOfWeek) => {
@@ -137,16 +159,16 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return {
             ...task,
             completed: false,
-            subtasks: task.subtasks.map(subtask => ({
+            subtasks: task.subtasks.map((subtask) => ({
               ...subtask,
-              completed: false
-            }))
+              completed: false,
+            })),
           };
         }
         return { ...task, completed: false };
-      })
+      }),
     );
-    toast.success('All tasks unchecked');
+    toast.success("All tasks unchecked");
   };
 
   const sortTasks = () => {
@@ -159,7 +181,8 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return [...prevTasks].sort((a, b) => {
         // First sort by priority
-        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        const priorityDiff =
+          priorityOrder[a.priority] - priorityOrder[b.priority];
         if (priorityDiff !== 0) return priorityDiff;
 
         // Then by completion status (incomplete first)
@@ -175,7 +198,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     });
 
-    toast.success('Tasks sorted by priority');
+    toast.success("Tasks sorted by priority");
   };
 
   const getTasksByDay = (day: DayOfWeek): Task[] => {
@@ -238,16 +261,14 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const toggleSelectTask = (taskId: string, selected: boolean) => {
     setSelectedTasks((prev) =>
-      selected
-        ? [...prev, taskId]
-        : prev.filter((id) => id !== taskId)
+      selected ? [...prev, taskId] : prev.filter((id) => id !== taskId),
     );
   };
 
   // Subtasks management
   const addSubtask = (taskId: string, subtaskTitle: string) => {
     if (!subtaskTitle.trim()) {
-      toast.error('Subtask title cannot be empty');
+      toast.error("Subtask title cannot be empty");
       return;
     }
 
@@ -267,9 +288,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
           };
         }
         return task;
-      })
+      }),
     );
-    toast.success('Subtask added successfully');
+    toast.success("Subtask added successfully");
   };
 
   const toggleSubtask = (taskId: string, subtaskId: string) => {
@@ -280,17 +301,21 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const updatedSubtasks = task.subtasks.map((subtask) =>
           subtask.id === subtaskId
             ? { ...subtask, completed: !subtask.completed }
-            : subtask
+            : subtask,
         );
 
         // Find the subtask that was toggled
-        const toggledSubtask = updatedSubtasks.find(subtask => subtask.id === subtaskId);
+        const toggledSubtask = updatedSubtasks.find(
+          (subtask) => subtask.id === subtaskId,
+        );
 
         // If we're unchecking a subtask, the parent task should also be unchecked
         const shouldUncheckParent = toggledSubtask && !toggledSubtask.completed;
 
         // Check if all subtasks are completed (used when checking a subtask)
-        const allSubtasksComplete = updatedSubtasks.every((subtask) => subtask.completed);
+        const allSubtasksComplete = updatedSubtasks.every(
+          (subtask) => subtask.completed,
+        );
 
         // Update the parent task completed status:
         // - If unchecking a subtask: always uncheck the parent
@@ -298,15 +323,19 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return {
           ...task,
           subtasks: updatedSubtasks,
-          completed: shouldUncheckParent ? false : (allSubtasksComplete ? true : task.completed),
+          completed: shouldUncheckParent
+            ? false
+            : allSubtasksComplete
+              ? true
+              : task.completed,
         };
-      })
+      }),
     );
   };
 
   const editSubtask = (taskId: string, subtaskId: string, title: string) => {
     if (!title.trim()) {
-      toast.error('Subtask title cannot be empty');
+      toast.error("Subtask title cannot be empty");
       return;
     }
 
@@ -319,12 +348,12 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
           subtasks: task.subtasks.map((subtask) =>
             subtask.id === subtaskId
               ? { ...subtask, title: title.trim() }
-              : subtask
+              : subtask,
           ),
         };
-      })
+      }),
     );
-    toast.success('Subtask updated');
+    toast.success("Subtask updated");
   };
 
   const deleteSubtask = (taskId: string, subtaskId: string) => {
@@ -336,9 +365,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...task,
           subtasks: task.subtasks.filter((subtask) => subtask.id !== subtaskId),
         };
-      })
+      }),
     );
-    toast.success('Subtask deleted');
+    toast.success("Subtask deleted");
   };
 
   // Pomodoro task management
@@ -347,9 +376,9 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       prevTasks.map((task) => ({
         ...task,
         currentPomodoroTask: task.id === taskId,
-      }))
+      })),
     );
-    toast.success('Current pomodoro task set');
+    toast.success("Current pomodoro task set");
   };
 
   const clearCurrentPomodoroTask = () => {
@@ -357,7 +386,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       prevTasks.map((task) => ({
         ...task,
         currentPomodoroTask: false,
-      }))
+      })),
     );
   };
 
@@ -380,7 +409,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
           pomodorosCompleted,
           completed,
         };
-      })
+      }),
     );
   };
 

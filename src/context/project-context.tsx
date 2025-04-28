@@ -1,13 +1,13 @@
-import type React from 'react';
-import { createContext, useContext, useState, useEffect } from 'react';
-import type { Project } from '@/lib/types';
-import { getProjects, saveProjects } from '@/lib/storage';
-import { toast } from 'sonner';
+import { getProjects, saveProjects } from "@/lib/storage";
+import type { Project } from "@/lib/types";
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface ProjectContextType {
   projects: Project[];
   addProject: (name: string, color: string) => void;
-  editProject: (id: string, updates: Partial<Omit<Project, 'id'>>) => void;
+  editProject: (id: string, updates: Partial<Omit<Project, "id">>) => void;
   deleteProject: (id: string) => void;
   getProjectById: (id: string) => Project | undefined;
 }
@@ -17,12 +17,14 @@ const ProjectContext = createContext<ProjectContextType | null>(null);
 export const useProjectContext = () => {
   const context = useContext(ProjectContext);
   if (!context) {
-    throw new Error('useProjectContext must be used within a ProjectProvider');
+    throw new Error("useProjectContext must be used within a ProjectProvider");
   }
   return context;
 };
 
-export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const addProject = (name: string, color: string) => {
     if (!name.trim()) {
-      toast.error('Project name cannot be empty');
+      toast.error("Project name cannot be empty");
       return;
     }
 
@@ -49,21 +51,23 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     setProjects((prevProjects) => [...prevProjects, newProject]);
-    toast.success('Project added successfully');
+    toast.success("Project added successfully");
   };
 
-  const editProject = (id: string, updates: Partial<Omit<Project, 'id'>>) => {
+  const editProject = (id: string, updates: Partial<Omit<Project, "id">>) => {
     setProjects((prevProjects) =>
       prevProjects.map((project) =>
-        project.id === id ? { ...project, ...updates } : project
-      )
+        project.id === id ? { ...project, ...updates } : project,
+      ),
     );
-    toast.success('Project updated');
+    toast.success("Project updated");
   };
 
   const deleteProject = (id: string) => {
-    setProjects((prevProjects) => prevProjects.filter((project) => project.id !== id));
-    toast.success('Project deleted');
+    setProjects((prevProjects) =>
+      prevProjects.filter((project) => project.id !== id),
+    );
+    toast.success("Project deleted");
   };
 
   const getProjectById = (id: string) => {

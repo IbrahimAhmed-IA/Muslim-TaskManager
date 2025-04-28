@@ -1,200 +1,110 @@
-import type React from 'react';
-import { useState } from 'react';
-import { FaGripVertical, FaTimes, FaExpand, FaCompress, FaArrowUp, FaArrowDown, FaCog } from 'react-icons/fa';
-import type { Widget } from '@/context/widget-layout-context';
-import { useWidgetLayout } from '@/context/widget-layout-context';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-
-interface DragHandleProps {
-  onMouseDown?: (e: React.MouseEvent) => void;
-  className?: string;
-}
+import { Button } from "@/components/ui/button";
+import { useWidgetLayout } from "@/context/widget-layout-context";
+import type { Widget } from "@/context/widget-layout-context";
+import { useAppSettings } from "@/context/app-settings-context";
+import { FaGripVertical, FaTimes, FaWindowMaximize, FaWindowRestore } from "react-icons/fa";
 
 interface WidgetContainerProps {
   widget: Widget;
   children: React.ReactNode;
-  draggable?: boolean;
   isBeingDragged?: boolean;
-  dragHandleProps?: DragHandleProps;
-  isDragDisabled?: boolean;
+  dragHandleProps?: {
+    onMouseDown: (e: React.MouseEvent) => void;
+  };
 }
 
 export default function WidgetContainer({
   widget,
   children,
-  draggable = true,
   isBeingDragged = false,
-  dragHandleProps = {},
-  isDragDisabled = false
+  dragHandleProps,
 }: WidgetContainerProps) {
-  const { removeWidget, updateWidgetSize, moveWidgetUp, moveWidgetDown } = useWidgetLayout();
-
-  // Determine if this is the task manager widget which should not be resizable
-  const isTaskManager = widget.type === 'tasks';
-
-  // Handle widget size cycling - medium -> large -> full -> medium
-  const handleCycleSize = () => {
-    if (isTaskManager) return; // Disable resizing for task manager
-
-    const sizeMap: Record<Widget['size'], Widget['size']> = {
-      'medium': 'large',
-      'large': 'full',
-      'full': 'medium'
-    };
-
-    updateWidgetSize(widget.id, sizeMap[widget.size]);
-  };
-
-  // Get size classes for the widget
-  const getSizeClasses = () => {
-    // Task manager is always full size
-    if (isTaskManager) return 'w-full max-w-none';
-
-    // Handle legacy 'small' size as 'medium'
-    const size = widget.size === 'small' ? 'medium' : widget.size;
-
-    switch (size) {
-      case 'medium':
-        return 'w-full max-w-[540px] h-auto'; // Medium widgets with auto height
-      case 'large':
-        return 'w-full max-w-3xl'; // Large widgets have width constraint
-      case 'full':
-        return 'w-full max-w-none'; // Full widgets take all available space
-      default:
-        return 'w-full';
-    }
-  };
-
-  // Get content height classes based on widget size
-  const getContentHeightClasses = () => {
-    // Handle both 'medium' and legacy 'small' sizes
-    if (widget.size === 'medium' || widget.size === 'small') {
-      return 'max-h-[210px] overflow-y-auto'; // Fixed max-height for medium widgets
-    }
-    return '';
-  };
-
-  // Function to ensure up/down buttons work properly
-  const handleMoveWidget = (direction: 'up' | 'down') => {
-    if (direction === 'up') {
-      moveWidgetUp(widget.id);
-    } else {
-      moveWidgetDown(widget.id);
-    }
-  };
+  const { removeWidget, toggleWidgetSize } = useWidgetLayout();
+  const { settings } = useAppSettings();
+  const isAdvancedMode = settings.advancedMode;
 
   return (
     <div
-      className={`widget ${getSizeClasses()} bg-slate-800/95 rounded-lg border-[0.25px] border-slate-700/30 shadow-sm overflow-hidden transition-all duration-300 ${
-        isBeingDragged ? 'opacity-75 scale-95 ring-1 ring-blue-400/50' : ''
-      }`}
-      data-size={widget.size}
+      className={`widget rounded-xl overflow-hidden transition-all duration-300 ${
+        isBeingDragged
+          ? "widget-dragging opacity-70 scale-95"
+          : ""
+      } ${isAdvancedMode
+          ? "bg-gradient-to-b from-slate-800/95 to-slate-800/85 backdrop-blur-lg border border-slate-700/70"
+          : "bg-white/95 backdrop-blur-lg border border-gray-200/50 shadow-lg"}`}
+      style={{
+        width: "100%",
+        marginBottom: isBeingDragged ? "40px" : "0",
+        transform: isBeingDragged ? "rotate(-1deg)" : "none",
+        boxShadow: isAdvancedMode
+          ? "0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2)"
+          : "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)",
+      }}
     >
-      {/* Widget Header - Much thinner */}
-      <div className="widget-header flex items-center justify-between bg-slate-800/95 py-1.5 px-2 border-b border-[0.25px] border-slate-700/30">
+      {/* Widget Header */}
+      <div
+        className={`widget-header px-3 py-2.5 flex justify-between items-center border-b ${
+          isAdvancedMode
+            ? "from-slate-800 to-slate-800/90 border-slate-700/70 text-white"
+            : "bg-gradient-to-r from-white to-gray-50 border-gray-200/50"
+        }`}
+      >
         <div className="flex items-center">
-          {draggable && !isDragDisabled && (
-            <div
-              {...dragHandleProps}
-              className="cursor-grab p-0.5 mr-1.5 text-slate-400 hover:text-white"
-              title="Drag to reposition"
-            >
-              <FaGripVertical size={14} />
-            </div>
-          )}
-          <h3 className="font-medium text-sm text-white truncate">{widget.title}</h3>
+          <div
+            className={`cursor-move p-1.5 mr-2 rounded-md transition-colors ${
+              isAdvancedMode
+                ? "hover:bg-slate-700/70 text-gray-300 hover:text-white"
+                : "hover:bg-gray-100/80 text-gray-500 hover:text-gray-800"
+            }`}
+            {...dragHandleProps}
+          >
+            <FaGripVertical size={14} />
+          </div>
+          <h3
+            className={`text-sm font-medium ${
+              isAdvancedMode ? "text-gray-200" : "text-gray-700"
+            }`}
+          >
+            {widget.title}
+          </h3>
         </div>
-
-        <div className="flex items-center space-x-0.5">
-          {/* Widget Order Controls - Fixed implementation */}
-          <button
-            onClick={() => handleMoveWidget('up')}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded transition-colors"
-            title="Move up"
+        <div className="flex items-center space-x-1.5">
+          {/* Toggle widget size button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => toggleWidgetSize(widget.id)}
+            className={`h-7 w-7 p-0 rounded-md transition-colors ${
+              isAdvancedMode
+                ? "hover:bg-slate-700/70 text-gray-300 hover:text-white"
+                : "hover:bg-gray-100/80 text-gray-500 hover:text-gray-700"
+            }`}
           >
-            <FaArrowUp size={10} />
-          </button>
+            {widget.size === "large" ? (
+              <FaWindowRestore size={12} />
+            ) : (
+              <FaWindowMaximize size={12} />
+            )}
+          </Button>
 
-          <button
-            onClick={() => handleMoveWidget('down')}
-            className="p-1 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded transition-colors"
-            title="Move down"
-          >
-            <FaArrowDown size={10} />
-          </button>
-
-          {/* Widget Size Toggle - Hide for task manager */}
-          {!isTaskManager && (
-            <button
-              onClick={handleCycleSize}
-              className="p-1 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded transition-colors"
-              title="Change size"
-            >
-              {widget.size === 'full' ? (
-                <FaCompress size={12} />
-              ) : (
-                <FaExpand size={12} />
-              )}
-            </button>
-          )}
-
-          {/* Widget Settings Dialog */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <button
-                className="p-1 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded transition-colors"
-                title="Widget settings"
-              >
-                <FaCog size={12} />
-              </button>
-            </DialogTrigger>
-            <DialogContent className="bg-slate-800/95 border-[0.25px] border-slate-700/30 text-white">
-              <DialogHeader>
-                <DialogTitle>Widget Settings</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 p-2">
-                {/* Size selection */}
-                <div className="mb-3">
-                  <label className="block mb-2 text-xs font-medium text-slate-400">Widget Size</label>
-                  <div className="flex space-x-2">
-                    {(['medium', 'large', 'full'] as const).map((size) => (
-                      <Button
-                        key={size}
-                        onClick={() => updateWidgetSize(widget.id, size)}
-                        disabled={isTaskManager}
-                        variant={widget.size === size ? 'default' : 'outline'}
-                        className={`px-2 py-1 text-xs ${
-                          isTaskManager ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        {size.charAt(0).toUpperCase() + size.slice(1)}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                {isTaskManager && (
-                  <p className="text-xs text-slate-500 italic">
-                    Task Manager size cannot be changed
-                  </p>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* Widget Remove Button */}
-          <button
+          {/* Remove button */}
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => removeWidget(widget.id)}
-            className="p-1 text-slate-400 hover:text-red-400 hover:bg-slate-700/50 rounded transition-colors"
-            title="Remove widget"
+            className={`h-7 w-7 p-0 rounded-md transition-colors ${
+              isAdvancedMode
+                ? "hover:bg-red-900/20 text-gray-300 hover:text-red-400"
+                : "hover:bg-red-50 text-gray-500 hover:text-red-500"
+            }`}
           >
-            <FaTimes size={12} />
-          </button>
+            <FaTimes size={14} />
+          </Button>
         </div>
       </div>
 
-      {/* Widget Content - Reduced padding */}
-      <div className={`widget-content p-2.5 ${getContentHeightClasses()}`}>
+      {/* Widget Content */}
+      <div className={`widget-content p-5 ${isAdvancedMode ? "text-gray-200" : ""}`}>
         {children}
       </div>
     </div>

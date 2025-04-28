@@ -1,17 +1,24 @@
-import type React from 'react';
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { toast } from 'sonner';
 import {
   type PomodoroSettings,
-  getPomodoroSettings,
-  savePomodoroSettings,
   getPomodoroCount,
-  savePomodoroCount,
+  getPomodoroSettings,
   getTimerState,
-  saveTimerState
-} from '@/lib/storage';
+  savePomodoroCount,
+  savePomodoroSettings,
+  saveTimerState,
+} from "@/lib/storage";
+import type React from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { toast } from "sonner";
 
-type TimerType = 'work' | 'shortBreak' | 'longBreak';
+type TimerType = "work" | "shortBreak" | "longBreak";
 
 interface PomodoroContextType {
   isRunning: boolean;
@@ -35,37 +42,45 @@ const PomodoroContext = createContext<PomodoroContextType | null>(null);
 export const usePomodoroContext = () => {
   const context = useContext(PomodoroContext);
   if (!context) {
-    throw new Error('usePomodoroContext must be used within a PomodoroProvider');
+    throw new Error(
+      "usePomodoroContext must be used within a PomodoroProvider",
+    );
   }
   return context;
 };
 
-export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<PomodoroSettings>(getPomodoroSettings());
+export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [settings, setSettings] = useState<PomodoroSettings>(
+    getPomodoroSettings(),
+  );
   const [pomodoroCount, setPomodoroCount] = useState<number>(0);
 
   // Load timer state from localStorage
-  const savedTimerState = useRef(typeof window !== 'undefined' ? getTimerState() : null);
+  const savedTimerState = useRef(
+    typeof window !== "undefined" ? getTimerState() : null,
+  );
 
   // Initialize state from saved timer state or defaults
   const [timerType, setTimerType] = useState<TimerType>(
-    savedTimerState.current?.timerType || 'work'
+    savedTimerState.current?.timerType || "work",
   );
   const [timeLeft, setTimeLeft] = useState(
-    savedTimerState.current?.timeLeft || settings.workDuration * 60
+    savedTimerState.current?.timeLeft || settings.workDuration * 60,
   );
   const [isRunning, setIsRunning] = useState(
-    savedTimerState.current?.isRunning || false
+    savedTimerState.current?.isRunning || false,
   );
   const [completedPomodoros, setCompletedPomodoros] = useState(
-    savedTimerState.current?.completedPomodoros || 0
+    savedTimerState.current?.completedPomodoros || 0,
   );
 
   // Store the end time of the timer to calculate time left accurately
   const endTimeRef = useRef<number | null>(
     savedTimerState.current?.isRunning && savedTimerState.current?.endTime
       ? savedTimerState.current.endTime
-      : null
+      : null,
   );
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const pomodoroCompleteCallbackRef = useRef<(() => void) | null>(null);
@@ -76,39 +91,46 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   // Initialize timer based on the selected type
-  const initializeTimer = useCallback((type: TimerType) => {
-    switch (type) {
-      case 'work':
-        setTimeLeft(settings.workDuration * 60);
-        break;
-      case 'shortBreak':
-        setTimeLeft(settings.shortBreakDuration * 60);
-        break;
-      case 'longBreak':
-        setTimeLeft(settings.longBreakDuration * 60);
-        break;
-    }
-    // Reset the end time reference when initializing
-    endTimeRef.current = null;
+  const initializeTimer = useCallback(
+    (type: TimerType) => {
+      switch (type) {
+        case "work":
+          setTimeLeft(settings.workDuration * 60);
+          break;
+        case "shortBreak":
+          setTimeLeft(settings.shortBreakDuration * 60);
+          break;
+        case "longBreak":
+          setTimeLeft(settings.longBreakDuration * 60);
+          break;
+      }
+      // Reset the end time reference when initializing
+      endTimeRef.current = null;
 
-    // Save the new timer state
-    saveTimerState({
-      isRunning: false,
-      timerType: type,
-      timeLeft: type === 'work'
-        ? settings.workDuration * 60
-        : type === 'shortBreak'
-          ? settings.shortBreakDuration * 60
-          : settings.longBreakDuration * 60,
-      completedPomodoros,
-      endTime: null
-    });
-  }, [settings, completedPomodoros]);
+      // Save the new timer state
+      saveTimerState({
+        isRunning: false,
+        timerType: type,
+        timeLeft:
+          type === "work"
+            ? settings.workDuration * 60
+            : type === "shortBreak"
+              ? settings.shortBreakDuration * 60
+              : settings.longBreakDuration * 60,
+        completedPomodoros,
+        endTime: null,
+      });
+    },
+    [settings, completedPomodoros],
+  );
 
   // Initialize timer when settings or timer type changes
   useEffect(() => {
     // Only initialize if there's no saved timer state or if timer type changes
-    if (!savedTimerState.current || savedTimerState.current.timerType !== timerType) {
+    if (
+      !savedTimerState.current ||
+      savedTimerState.current.timerType !== timerType
+    ) {
       initializeTimer(timerType);
     }
     // Clear the saved state reference after initial use
@@ -126,7 +148,10 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       timerRef.current = setInterval(() => {
         const now = Date.now();
         if (endTimeRef.current !== null) {
-          const newTimeLeft = Math.max(0, Math.round((endTimeRef.current - now) / 1000));
+          const newTimeLeft = Math.max(
+            0,
+            Math.round((endTimeRef.current - now) / 1000),
+          );
           setTimeLeft(newTimeLeft);
 
           // Save timer state every 5 seconds to avoid excessive writes
@@ -136,7 +161,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               timerType,
               timeLeft: newTimeLeft,
               completedPomodoros,
-              endTime: endTimeRef.current
+              endTime: endTimeRef.current,
             });
           }
         }
@@ -150,7 +175,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         timerType,
         timeLeft,
         completedPomodoros,
-        endTime: null
+        endTime: null,
       });
     }
 
@@ -169,16 +194,20 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       endTimeRef.current = null;
 
       // Play appropriate notification
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      if (
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        Notification.permission === "granted"
+      ) {
         new Notification(
-          timerType === 'work'
-            ? 'Pomodoro completed! Take a break'
-            : 'Break is over! Time to work'
+          timerType === "work"
+            ? "Pomodoro completed! Take a break"
+            : "Break is over! Time to work",
         );
       }
 
       // Handle different timer completions
-      if (timerType === 'work') {
+      if (timerType === "work") {
         const newCompletedPomodoros = completedPomodoros + 1;
         setCompletedPomodoros(newCompletedPomodoros);
         incrementPomodoroCount(); // Increment the pomodoro count
@@ -189,19 +218,22 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
 
         // Determine if we should take a long break
-        const shouldTakeLongBreak = newCompletedPomodoros % settings.longBreakInterval === 0;
-        const nextTimerType = shouldTakeLongBreak ? 'longBreak' : 'shortBreak';
+        const shouldTakeLongBreak =
+          newCompletedPomodoros % settings.longBreakInterval === 0;
+        const nextTimerType = shouldTakeLongBreak ? "longBreak" : "shortBreak";
 
-        toast.success('Pomodoro completed! Time for a break');
+        toast.success("Pomodoro completed! Time for a break");
         setTimerType(nextTimerType);
 
         // Save state on timer completion
         saveTimerState({
           isRunning: false,
           timerType: nextTimerType,
-          timeLeft: shouldTakeLongBreak ? settings.longBreakDuration * 60 : settings.shortBreakDuration * 60,
+          timeLeft: shouldTakeLongBreak
+            ? settings.longBreakDuration * 60
+            : settings.shortBreakDuration * 60,
           completedPomodoros: newCompletedPomodoros,
-          endTime: null
+          endTime: null,
         });
 
         // Auto-start break if enabled
@@ -211,16 +243,16 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }, 500);
         }
       } else {
-        toast.success('Break completed! Time to focus');
-        setTimerType('work');
+        toast.success("Break completed! Time to focus");
+        setTimerType("work");
 
         // Save state on timer completion
         saveTimerState({
           isRunning: false,
-          timerType: 'work',
+          timerType: "work",
           timeLeft: settings.workDuration * 60,
           completedPomodoros,
-          endTime: null
+          endTime: null,
         });
 
         // Auto-start pomodoro if enabled
@@ -256,7 +288,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         timerType,
         timeLeft,
         completedPomodoros,
-        endTime: endTimeRef.current
+        endTime: endTimeRef.current,
       });
     }
     setIsRunning(true);
@@ -274,7 +306,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       timerType,
       timeLeft,
       completedPomodoros,
-      endTime: null
+      endTime: null,
     });
   };
 
@@ -291,12 +323,14 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     endTimeRef.current = null;
 
     let nextType: TimerType;
-    if (timerType === 'work') {
-      nextType = completedPomodoros % settings.longBreakInterval === settings.longBreakInterval - 1
-        ? 'longBreak'
-        : 'shortBreak';
+    if (timerType === "work") {
+      nextType =
+        completedPomodoros % settings.longBreakInterval ===
+        settings.longBreakInterval - 1
+          ? "longBreak"
+          : "shortBreak";
     } else {
-      nextType = 'work';
+      nextType = "work";
     }
 
     setTimerType(nextType);
@@ -305,13 +339,14 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     saveTimerState({
       isRunning: false,
       timerType: nextType,
-      timeLeft: nextType === 'work'
-        ? settings.workDuration * 60
-        : nextType === 'shortBreak'
-          ? settings.shortBreakDuration * 60
-          : settings.longBreakDuration * 60,
+      timeLeft:
+        nextType === "work"
+          ? settings.workDuration * 60
+          : nextType === "shortBreak"
+            ? settings.shortBreakDuration * 60
+            : settings.longBreakDuration * 60,
       completedPomodoros,
-      endTime: null
+      endTime: null,
     });
   };
 
@@ -325,13 +360,14 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     saveTimerState({
       isRunning: false,
       timerType: type,
-      timeLeft: type === 'work'
-        ? settings.workDuration * 60
-        : type === 'shortBreak'
-          ? settings.shortBreakDuration * 60
-          : settings.longBreakDuration * 60,
+      timeLeft:
+        type === "work"
+          ? settings.workDuration * 60
+          : type === "shortBreak"
+            ? settings.shortBreakDuration * 60
+            : settings.longBreakDuration * 60,
       completedPomodoros,
-      endTime: null
+      endTime: null,
     });
   };
 
@@ -343,7 +379,7 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return updated;
     });
 
-    toast.success('Settings updated');
+    toast.success("Settings updated");
 
     // Reinitialize the current timer with new duration
     setIsRunning(false);

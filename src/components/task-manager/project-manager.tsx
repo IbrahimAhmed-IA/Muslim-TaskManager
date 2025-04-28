@@ -1,46 +1,53 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useProjectContext } from '@/context/project-context';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAppSettings } from '@/context/app-settings-context';
-import { FaPlus, FaEdit, FaTrash, FaFolder } from 'react-icons/fa';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useAppSettings } from "@/context/app-settings-context";
+import { useProjectContext } from "@/context/project-context";
+import { useState } from "react";
+import { FaEdit, FaFolder, FaPlus, FaTrash } from "react-icons/fa";
 
 const COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // green
-  '#f59e0b', // amber
-  '#ef4444', // red
-  '#8b5cf6', // violet
-  '#ec4899', // pink
-  '#6366f1', // indigo
-  '#14b8a6', // teal
+  "#3b82f6", // blue
+  "#10b981", // green
+  "#f59e0b", // amber
+  "#ef4444", // red
+  "#8b5cf6", // violet
+  "#ec4899", // pink
+  "#6366f1", // indigo
+  "#14b8a6", // teal
 ];
 
+interface Project {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export default function ProjectManager() {
-  const { projects, addProject, editProject, deleteProject } = useProjectContext();
+  const { projects, addProject, editProject, deleteProject } =
+    useProjectContext();
   const { settings } = useAppSettings();
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [color, setColor] = useState(COLORS[0]);
   const [editMode, setEditMode] = useState(false);
-  const [editId, setEditId] = useState('');
+  const [editId, setEditId] = useState("");
 
   const handleAddProject = () => {
     if (name.trim()) {
       if (editMode && editId) {
         editProject(editId, { name, color });
         setEditMode(false);
-        setEditId('');
+        setEditId("");
       } else {
         addProject(name, color);
       }
-      setName('');
+      setName("");
     }
   };
 
-  const startEdit = (project) => {
+  const startEdit = (project: Project) => {
     setEditMode(true);
     setEditId(project.id);
     setName(project.name);
@@ -49,8 +56,8 @@ export default function ProjectManager() {
 
   const cancelEdit = () => {
     setEditMode(false);
-    setEditId('');
-    setName('');
+    setEditId("");
+    setName("");
   };
 
   if (!settings.advancedMode) {
@@ -58,10 +65,14 @@ export default function ProjectManager() {
   }
 
   return (
-    <Card className={`p-4 mb-6 ${settings.advancedMode ? 'bg-slate-800 border-slate-700 text-white' : ''}`}>
+    <Card
+      className={`p-4 mb-6 ${
+        settings.advancedMode ? "bg-slate-800 border-slate-700 text-white" : ""
+      }`}
+    >
       <h3 className="text-lg font-medium mb-3 flex items-center">
         <FaFolder className="mr-2" />
-        {editMode ? 'Edit Project' : 'Add Project'}
+        {editMode ? "Edit Project" : "Add Project"}
       </h3>
 
       <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
@@ -69,7 +80,9 @@ export default function ProjectManager() {
           placeholder="Project name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className={`flex-1 ${settings.advancedMode ? 'bg-slate-700 border-slate-600 text-white' : ''}`}
+          className={`flex-1 ${
+            settings.advancedMode ? "bg-slate-700 border-slate-600 text-white" : ""
+          }`}
         />
 
         <div className="flex items-center space-x-2">
@@ -80,7 +93,7 @@ export default function ProjectManager() {
                 key={c}
                 type="button"
                 className={`w-6 h-6 rounded-full cursor-pointer transition-transform ${
-                  color === c ? 'ring-2 ring-white scale-110' : ''
+                  color === c ? "ring-2 ring-white scale-110" : ""
                 }`}
                 style={{ backgroundColor: c }}
                 onClick={() => setColor(c)}
@@ -93,16 +106,28 @@ export default function ProjectManager() {
         <div className="flex space-x-2">
           <Button
             onClick={handleAddProject}
-            className={`${settings.advancedMode ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+            className={`${
+              settings.advancedMode ? "bg-blue-600 hover:bg-blue-700" : ""
+            }`}
           >
-            {editMode ? 'Update' : <><FaPlus className="mr-1" /> Add</>}
+            {editMode ? (
+              "Update"
+            ) : (
+              <>
+                <FaPlus className="mr-1" /> Add
+              </>
+            )}
           </Button>
 
           {editMode && (
             <Button
               onClick={cancelEdit}
               variant="outline"
-              className={settings.advancedMode ? 'border-slate-600 text-white hover:bg-slate-700' : ''}
+              className={
+                settings.advancedMode
+                  ? "border-slate-600 text-white hover:bg-slate-700"
+                  : ""
+              }
             >
               Cancel
             </Button>
@@ -112,7 +137,9 @@ export default function ProjectManager() {
 
       {projects.length > 0 && (
         <div className="mt-4">
-          <h4 className="text-sm font-medium text-slate-200 mb-2">Your Projects</h4>
+          <h4 className="text-sm font-medium text-slate-200 mb-2">
+            Your Projects
+          </h4>
           <div className="space-y-2">
             {projects.map((project) => (
               <div

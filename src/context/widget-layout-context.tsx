@@ -1,7 +1,13 @@
-import type React from 'react';
-import { createContext, useContext, useState, useEffect } from 'react';
+'use client';
 
-// Define widget types that can be added to the layout
+import type React from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+} from 'react';
+
 export type WidgetType =
   | 'tasks'
   | 'pomodoro'
@@ -10,355 +16,284 @@ export type WidgetType =
   | 'notes'
   | 'progress';
 
-// Interface for a widget in the layout
+export type WidgetSize = 'small' | 'medium' | 'large' | 'full';
+
 export interface Widget {
   id: string;
   type: WidgetType;
   title: string;
-  size: 'medium' | 'large' | 'full'; // Removed 'small' from the size options
+  size: WidgetSize;
   order: number;
   visible: boolean;
 }
 
-// Widget layout context type
-interface WidgetLayoutContextType {
+interface WidgetTypeConfig {
+  id: string;
+  type: WidgetType;
+  title: string;
+  defaultSize: WidgetSize;
+}
+
+interface WidgetContextType {
   widgets: Widget[];
   availableWidgets: Widget[];
   addWidget: (type: WidgetType) => void;
   removeWidget: (id: string) => void;
-  updateWidgetOrder: (id: string, newOrder: number) => void;
-  updateWidgetSize: (id: string, size: Widget['size']) => void;
-  updateWidgetVisibility: (id: string, visible: boolean) => void;
+  updateWidgetSize: (id: string, size: WidgetSize) => void;
+  toggleWidgetSize: (id: string) => void;
   moveWidgetUp: (id: string) => void;
   moveWidgetDown: (id: string) => void;
-  reorderWidgets: (startIndex: number, endIndex: number) => void;
-  resetToDefaultLayout: () => void;
   setWidgets: React.Dispatch<React.SetStateAction<Widget[]>>;
 }
 
-// Constants for storage
-const WIDGET_LAYOUT_STORAGE_KEY = 'muslim_task_manager_widget_layout';
-
-// Default widgets
-export const DEFAULT_WIDGETS: Widget[] = [
-  {
-    id: 'progress-widget',
-    type: 'progress',
-    title: 'Progress Overview',
-    size: 'medium', // Changed from 'small' to 'medium'
-    order: 0,
-    visible: true
-  },
-  {
-    id: 'tasks-widget',
+// Define widget types and their configurations
+const widgetTypes: Record<WidgetType, WidgetTypeConfig> = {
+  tasks: {
+    id: 'tasks',
     type: 'tasks',
     title: 'Task Manager',
-    size: 'full',
-    order: 1,
-    visible: true
+    defaultSize: 'full',
   },
-  {
-    id: 'projects-widget',
-    type: 'projects',
-    title: 'Projects',
-    size: 'medium',
-    order: 2,
-    visible: true
-  },
-  {
-    id: 'pomodoro-widget',
+  pomodoro: {
+    id: 'pomodoro',
     type: 'pomodoro',
     title: 'Pomodoro Timer',
-    size: 'medium', // Changed from 'small' to 'medium'
-    order: 3,
-    visible: false
+    defaultSize: 'medium',
   },
-  {
-    id: 'azanTimes-widget',
+  projects: {
+    id: 'projects',
+    type: 'projects',
+    title: 'Projects',
+    defaultSize: 'medium',
+  },
+  azanTimes: {
+    id: 'azanTimes',
     type: 'azanTimes',
     title: 'Azan Times',
-    size: 'medium', // Changed from 'small' to 'medium'
-    order: 4,
-    visible: false
+    defaultSize: 'medium',
   },
-  {
-    id: 'notes-widget',
+  notes: {
+    id: 'notes',
     type: 'notes',
-    title: 'Notes',
-    size: 'medium',
-    order: 5,
-    visible: false
-  }
-];
-
-// Helper function to get widgets from localStorage
-const getWidgetLayout = (): Widget[] => {
-  if (typeof window === 'undefined') return DEFAULT_WIDGETS;
-
-  const layoutJson = localStorage.getItem(WIDGET_LAYOUT_STORAGE_KEY);
-  if (!layoutJson) return DEFAULT_WIDGETS;
-
-  try {
-    // Get stored widgets
-    const storedWidgets = JSON.parse(layoutJson);
-
-    // Make sure all 'small' widgets are converted to 'medium'
-    return storedWidgets.map((widget: Widget) => {
-      if (widget.size === 'small') {
-        return { ...widget, size: 'medium' };
-      }
-      return widget;
-    });
-  } catch (error) {
-    console.error('Failed to parse widget layout from localStorage', error);
-    return DEFAULT_WIDGETS;
-  }
-};
-
-// Helper function to save widgets to localStorage
-const saveWidgetLayout = (widgets: Widget[]): void => {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(WIDGET_LAYOUT_STORAGE_KEY, JSON.stringify(widgets));
+    title: 'Quick Notes',
+    defaultSize: 'medium',
+  },
+  progress: {
+    id: 'progress',
+    type: 'progress',
+    title: 'Progress',
+    defaultSize: 'small',
+  },
 };
 
 // Create the context
-const WidgetLayoutContext = createContext<WidgetLayoutContextType | null>(null);
+const WidgetLayoutContext = createContext<WidgetContextType | undefined>(
+  undefined,
+);
 
-// Hook to use the context
-export const useWidgetLayout = () => {
-  const context = useContext(WidgetLayoutContext);
-  if (!context) {
-    throw new Error('useWidgetLayout must be used within a WidgetLayoutProvider');
-  }
-  return context;
-};
+export function WidgetLayoutProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // State for widgets configuration
+  const [widgets, setWidgets] = useState<Widget[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedWidgets = localStorage.getItem('biome-widgets');
+      if (savedWidgets) {
+        try {
+          return JSON.parse(savedWidgets);
+        } catch (error) {
+          console.error('Failed to parse saved widgets', error);
+        }
+      }
+    }
 
-// Provider component
-export const WidgetLayoutProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [widgets, setWidgets] = useState<Widget[]>(getWidgetLayout());
-
-  // Calculate available widgets (those not currently visible in the layout)
-  const availableWidgets = DEFAULT_WIDGETS.filter(defaultWidget =>
-    !widgets.some(w => w.id === defaultWidget.id && w.visible)
-  );
+    // Default widgets if none are saved
+    return [
+      {
+        id: 'tasks',
+        type: 'tasks',
+        title: 'Task Manager',
+        size: 'full',
+        order: 0,
+        visible: true,
+      },
+      {
+        id: 'pomodoro',
+        type: 'pomodoro',
+        title: 'Pomodoro Timer',
+        size: 'medium',
+        order: 1,
+        visible: true,
+      },
+      {
+        id: 'notes',
+        type: 'notes',
+        title: 'Quick Notes',
+        size: 'medium',
+        order: 2,
+        visible: true,
+      },
+      {
+        id: 'progress',
+        type: 'progress',
+        title: 'Progress',
+        size: 'small',
+        order: 3,
+        visible: true,
+      },
+    ];
+  });
 
   // Save widgets to localStorage whenever they change
   useEffect(() => {
-    saveWidgetLayout(widgets);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('biome-widgets', JSON.stringify(widgets));
+    }
   }, [widgets]);
 
-  // Add a widget to the layout
+  // Calculate available widgets (not currently on dashboard)
+  const availableWidgets = Object.values(widgetTypes).filter(
+    (widgetType) => !widgets.some((w) => w.visible && w.type === widgetType.type),
+  );
+
+  // Add a widget to the dashboard
   const addWidget = (type: WidgetType) => {
-    // Find the widget in default widgets
-    const widgetToAdd = DEFAULT_WIDGETS.find(w => w.type === type);
-    if (!widgetToAdd) return;
+    // Find the widget type configuration
+    const widgetType = widgetTypes[type];
+    if (!widgetType) return;
 
-    setWidgets(prev => {
-      // If widget already exists in layout, just make it visible and preserve its size
-      const existingWidgetIndex = prev.findIndex(w => w.id === widgetToAdd.id);
-      if (existingWidgetIndex >= 0) {
-        const newWidgets = [...prev];
-        newWidgets[existingWidgetIndex] = {
-          ...newWidgets[existingWidgetIndex],
-          visible: true
-        };
-        return newWidgets;
-      }
+    // Check if the widget exists but is not visible
+    const existingWidget = widgets.find((w) => w.type === type && !w.visible);
+    if (existingWidget) {
+      // Make the existing widget visible
+      setWidgets(
+        widgets.map((w) =>
+          w.id === existingWidget.id ? { ...w, visible: true } : w,
+        ),
+      );
+      return;
+    }
 
-      // Otherwise add it to the end, preserving its default size
-      const highestOrder = Math.max(-1, ...prev.filter(w => w.visible).map(w => w.order));
-      return [
-        ...prev,
-        {
-          ...widgetToAdd,
-          order: highestOrder + 1,
-          visible: true
-        }
-      ];
-    });
+    // Calculate highest order
+    const highestOrder = widgets.reduce(
+      (max, widget) => Math.max(max, widget.order),
+      -1,
+    );
+
+    // Create a new widget with unique ID
+    const newWidget: Widget = {
+      id: `${type}-${Date.now()}`,
+      type,
+      title: widgetType.title,
+      size: widgetType.defaultSize,
+      order: highestOrder + 1,
+      visible: true,
+    };
+
+    setWidgets([...widgets, newWidget]);
   };
 
-  // Remove a widget from the layout
+  // Remove a widget from the dashboard
   const removeWidget = (id: string) => {
-    setWidgets(prev => {
-      const widgetIndex = prev.findIndex(w => w.id === id);
-      if (widgetIndex < 0) return prev;
+    // Don't allow removing the task manager
+    if (id === 'tasks') return;
 
-      const newWidgets = [...prev];
-      const removedWidgetOrder = newWidgets[widgetIndex].order;
-      newWidgets[widgetIndex] = {
-        ...newWidgets[widgetIndex],
-        visible: false
-      };
-
-      // Reorder only visible widgets
-      return newWidgets.map(w => {
-        if (w.visible && w.order > removedWidgetOrder) {
-          return { ...w, order: w.order - 1 };
-        }
-        return w;
-      });
-    });
-  };
-
-  // Update widget order
-  const updateWidgetOrder = (id: string, newOrder: number) => {
-    setWidgets(prev => {
-      const widget = prev.find(w => w.id === id);
-      if (!widget) return prev;
-
-      const oldOrder = widget.order;
-      if (oldOrder === newOrder) return prev;
-
-      return prev.map(w => {
-        if (w.id === id) {
-          return { ...w, order: newOrder };
-        }
-        if (w.visible) {
-          if (oldOrder < newOrder && w.order > oldOrder && w.order <= newOrder) {
-            return { ...w, order: w.order - 1 };
-          }
-          if (oldOrder > newOrder && w.order >= newOrder && w.order < oldOrder) {
-            return { ...w, order: w.order + 1 };
-          }
-        }
-        return w;
-      });
-    });
-  };
-
-  // Update widget size
-  const updateWidgetSize = (id: string, size: Widget['size']) => {
-    setWidgets(prev =>
-      prev.map(w => w.id === id ? { ...w, size } : w)
+    // Hide the widget instead of removing it
+    setWidgets(
+      widgets.map((widget) =>
+        widget.id === id ? { ...widget, visible: false } : widget,
+      ),
     );
   };
 
-  // Update widget visibility
-  const updateWidgetVisibility = (id: string, visible: boolean) => {
-    setWidgets(prev => {
-      return prev.map(w => {
-        if (w.id === id) {
-          return { ...w, visible };
-        }
-        return w;
-      });
-    });
+  // Update a widget's size
+  const updateWidgetSize = (id: string, size: WidgetSize) => {
+    setWidgets(
+      widgets.map((widget) =>
+        widget.id === id ? { ...widget, size } : widget,
+      ),
+    );
   };
 
-  // Move a widget up in the order
+  // Toggle a widget's size between medium and large
+  const toggleWidgetSize = (id: string) => {
+    setWidgets(
+      widgets.map((widget) => {
+        if (widget.id === id) {
+          const newSize = widget.size === 'medium' || widget.size === 'small'
+            ? 'large'
+            : 'medium';
+          return { ...widget, size: newSize };
+        }
+        return widget;
+      }),
+    );
+  };
+
+  // Move a widget up in order
   const moveWidgetUp = (id: string) => {
-    setWidgets(prev => {
-      // Find the current widget and ensure it's visible
-      const widget = prev.find(w => w.id === id && w.visible);
-      if (!widget) return prev;
+    const widget = widgets.find((w) => w.id === id);
+    if (!widget) return;
 
-      // If it's already at the top, don't do anything
-      // Get all visible widgets sorted by order
-      const visibleWidgets = prev.filter(w => w.visible).sort((a, b) => a.order - b.order);
-      const widgetIndex = visibleWidgets.findIndex(w => w.id === id);
-      if (widgetIndex <= 0) return prev;
+    const aboveWidget = widgets
+      .filter((w) => w.visible)
+      .find((w) => w.order === widget.order - 1);
+    if (!aboveWidget) return;
 
-      const widgetAbove = visibleWidgets[widgetIndex - 1];
-
-      // Swap orders
-      return prev.map(w => {
-        if (w.id === id) {
-          return { ...w, order: widgetAbove.order };
-        }
-        if (w.id === widgetAbove.id) {
-          return { ...w, order: widget.order };
-        }
+    setWidgets(
+      widgets.map((w) => {
+        if (w.id === id) return { ...w, order: w.order - 1 };
+        if (w.id === aboveWidget.id) return { ...w, order: w.order + 1 };
         return w;
-      });
-    });
+      }),
+    );
   };
 
-  // Move a widget down in the order
+  // Move a widget down in order
   const moveWidgetDown = (id: string) => {
-    setWidgets(prev => {
-      // Find the current widget and ensure it's visible
-      const widget = prev.find(w => w.id === id && w.visible);
-      if (!widget) return prev;
+    const widget = widgets.find((w) => w.id === id);
+    if (!widget) return;
 
-      // Get all visible widgets sorted by order
-      const visibleWidgets = prev.filter(w => w.visible).sort((a, b) => a.order - b.order);
+    const belowWidget = widgets
+      .filter((w) => w.visible)
+      .find((w) => w.order === widget.order + 1);
+    if (!belowWidget) return;
 
-      // Get the max order value
-      const maxOrder = visibleWidgets.length - 1;
-
-      // Find the index of the widget
-      const widgetIndex = visibleWidgets.findIndex(w => w.id === id);
-      // If it's already at the bottom, don't do anything
-      if (widgetIndex < 0 || widgetIndex >= visibleWidgets.length - 1) return prev;
-
-      const widgetBelow = visibleWidgets[widgetIndex + 1];
-
-      // Swap orders
-      return prev.map(w => {
-        if (w.id === id) {
-          return { ...w, order: widgetBelow.order };
-        }
-        if (w.id === widgetBelow.id) {
-          return { ...w, order: widget.order };
-        }
+    setWidgets(
+      widgets.map((w) => {
+        if (w.id === id) return { ...w, order: w.order + 1 };
+        if (w.id === belowWidget.id) return { ...w, order: w.order - 1 };
         return w;
-      });
-    });
+      }),
+    );
   };
 
-  // Reorder widgets using drag and drop
-  const reorderWidgets = (startIndex: number, endIndex: number) => {
-    setWidgets(prev => {
-      // Only reorder visible widgets
-      const visibleWidgets = prev.filter(w => w.visible).sort((a, b) => a.order - b.order);
-      const allWidgets = [...prev];
-
-      if (
-        startIndex < 0 ||
-        endIndex < 0 ||
-        startIndex >= visibleWidgets.length ||
-        endIndex >= visibleWidgets.length
-      ) {
-        return prev;
-      }
-
-      const [removed] = visibleWidgets.splice(startIndex, 1);
-      visibleWidgets.splice(endIndex, 0, removed);
-
-      // Update order property for visible widgets
-      visibleWidgets.forEach((widget, idx) => {
-        const indexInAll = allWidgets.findIndex(w => w.id === widget.id);
-        allWidgets[indexInAll] = { ...allWidgets[indexInAll], order: idx };
-      });
-
-      return allWidgets;
-    });
-  };
-
-  // Reset to default layout
-  const resetToDefaultLayout = () => {
-    setWidgets(DEFAULT_WIDGETS);
+  // Provide context value
+  const value = {
+    widgets,
+    availableWidgets,
+    addWidget,
+    removeWidget,
+    updateWidgetSize,
+    toggleWidgetSize,
+    moveWidgetUp,
+    moveWidgetDown,
+    setWidgets,
   };
 
   return (
-    <WidgetLayoutContext.Provider
-      value={{
-        widgets,
-        availableWidgets,
-        addWidget,
-        removeWidget,
-        updateWidgetOrder,
-        updateWidgetSize,
-        updateWidgetVisibility,
-        moveWidgetUp,
-        moveWidgetDown,
-        reorderWidgets,
-        resetToDefaultLayout,
-        setWidgets
-      }}
-    >
+    <WidgetLayoutContext.Provider value={value}>
       {children}
     </WidgetLayoutContext.Provider>
   );
-};
+}
+
+export function useWidgetLayout() {
+  const context = useContext(WidgetLayoutContext);
+  if (context === undefined) {
+    throw new Error('useWidgetLayout must be used within a WidgetLayoutProvider');
+  }
+  return context;
+}

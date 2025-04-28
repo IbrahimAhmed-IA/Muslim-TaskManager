@@ -8,7 +8,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Muslim Task Manager",
-  description: "A task manager app for Muslims with additional features like Pomodoro timer and Notes",
+  description:
+    "A task manager app for Muslims with additional features like Pomodoro timer and Notes",
 };
 
 export default function RootLayout({
@@ -19,9 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ClientProviders>
-          {children}
-        </ClientProviders>
+        <ClientProviders>{children}</ClientProviders>
         <Toaster position="top-right" />
       </body>
     </html>

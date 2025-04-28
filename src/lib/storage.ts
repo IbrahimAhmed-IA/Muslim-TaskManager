@@ -1,10 +1,10 @@
-import type { Task, Note, WeeklyScore, Project } from './types';
+import type { Note, Project, Task, WeeklyScore } from "./types";
 
 // Tasks Storage
-const TASKS_STORAGE_KEY = 'muslim_task_manager_tasks';
+const TASKS_STORAGE_KEY = "muslim_task_manager_tasks";
 
 export const getTasks = (): Task[] => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
 
   const tasksJson = localStorage.getItem(TASKS_STORAGE_KEY);
   if (!tasksJson) return [];
@@ -12,21 +12,21 @@ export const getTasks = (): Task[] => {
   try {
     return JSON.parse(tasksJson);
   } catch (error) {
-    console.error('Failed to parse tasks from localStorage', error);
+    console.error("Failed to parse tasks from localStorage", error);
     return [];
   }
 };
 
 export const saveTasks = (tasks: Task[]): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
 };
 
 // Projects Storage
-const PROJECTS_STORAGE_KEY = 'muslim_task_manager_projects';
+const PROJECTS_STORAGE_KEY = "muslim_task_manager_projects";
 
 export const getProjects = (): Project[] => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
 
   const projectsJson = localStorage.getItem(PROJECTS_STORAGE_KEY);
   if (!projectsJson) return [];
@@ -34,18 +34,18 @@ export const getProjects = (): Project[] => {
   try {
     return JSON.parse(projectsJson);
   } catch (error) {
-    console.error('Failed to parse projects from localStorage', error);
+    console.error("Failed to parse projects from localStorage", error);
     return [];
   }
 };
 
 export const saveProjects = (projects: Project[]): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
 };
 
 // Notes Storage
-const NOTES_STORAGE_KEY = 'muslim_task_manager_notes';
+const NOTES_STORAGE_KEY = "muslim_task_manager_notes";
 
 interface RawNote {
   id: string;
@@ -56,7 +56,7 @@ interface RawNote {
 }
 
 export const getNotes = (): Note[] => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
 
   const notesJson = localStorage.getItem(NOTES_STORAGE_KEY);
   if (!notesJson) return [];
@@ -67,16 +67,16 @@ export const getNotes = (): Note[] => {
     return parsed.map((note: RawNote) => ({
       ...note,
       createdAt: new Date(note.createdAt),
-      updatedAt: new Date(note.updatedAt)
+      updatedAt: new Date(note.updatedAt),
     }));
   } catch (error) {
-    console.error('Failed to parse notes from localStorage', error);
+    console.error("Failed to parse notes from localStorage", error);
     return [];
   }
 };
 
 export const saveNotes = (notes: Note[]): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
 };
 
@@ -99,10 +99,10 @@ const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
   autoStartPomodoros: false,
 };
 
-const POMODORO_SETTINGS_KEY = 'muslim_task_manager_pomodoro_settings';
+const POMODORO_SETTINGS_KEY = "muslim_task_manager_pomodoro_settings";
 
 export const getPomodoroSettings = (): PomodoroSettings => {
-  if (typeof window === 'undefined') return DEFAULT_POMODORO_SETTINGS;
+  if (typeof window === "undefined") return DEFAULT_POMODORO_SETTINGS;
 
   const settingsJson = localStorage.getItem(POMODORO_SETTINGS_KEY);
   if (!settingsJson) return DEFAULT_POMODORO_SETTINGS;
@@ -110,21 +110,21 @@ export const getPomodoroSettings = (): PomodoroSettings => {
   try {
     return { ...DEFAULT_POMODORO_SETTINGS, ...JSON.parse(settingsJson) };
   } catch (error) {
-    console.error('Failed to parse pomodoro settings from localStorage', error);
+    console.error("Failed to parse pomodoro settings from localStorage", error);
     return DEFAULT_POMODORO_SETTINGS;
   }
 };
 
 export const savePomodoroSettings = (settings: PomodoroSettings): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(POMODORO_SETTINGS_KEY, JSON.stringify(settings));
 };
 
 // Pomodoro Count Storage
-const POMODORO_COUNT_KEY = 'muslim_task_manager_pomodoro_count';
+const POMODORO_COUNT_KEY = "muslim_task_manager_pomodoro_count";
 
 export const getPomodoroCount = (): number => {
-  if (typeof window === 'undefined') return 0;
+  if (typeof window === "undefined") return 0;
 
   const countJson = localStorage.getItem(POMODORO_COUNT_KEY);
   if (!countJson) return 0;
@@ -132,26 +132,26 @@ export const getPomodoroCount = (): number => {
   try {
     return JSON.parse(countJson);
   } catch (error) {
-    console.error('Failed to parse pomodoro count from localStorage', error);
+    console.error("Failed to parse pomodoro count from localStorage", error);
     return 0;
   }
 };
 
 export const savePomodoroCount = (count: number): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(POMODORO_COUNT_KEY, JSON.stringify(count));
 };
 
 export const resetPomodoroCount = (): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(POMODORO_COUNT_KEY, JSON.stringify(0));
 };
 
 // Weekly Scores Storage
-const WEEKLY_SCORES_KEY = 'muslim_task_manager_weekly_scores';
+const WEEKLY_SCORES_KEY = "muslim_task_manager_weekly_scores";
 
 export const getWeeklyScores = (): WeeklyScore[] => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
 
   const scoresJson = localStorage.getItem(WEEKLY_SCORES_KEY);
   if (!scoresJson) return [];
@@ -159,13 +159,13 @@ export const getWeeklyScores = (): WeeklyScore[] => {
   try {
     return JSON.parse(scoresJson);
   } catch (error) {
-    console.error('Failed to parse weekly scores from localStorage', error);
+    console.error("Failed to parse weekly scores from localStorage", error);
     return [];
   }
 };
 
 export const saveWeeklyScores = (scores: WeeklyScore[]): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(WEEKLY_SCORES_KEY, JSON.stringify(scores));
 };
 
@@ -178,7 +178,7 @@ export const addWeeklyScore = (score: WeeklyScore): void => {
 // Timer State Storage
 interface TimerState {
   isRunning: boolean;
-  timerType: 'work' | 'shortBreak' | 'longBreak';
+  timerType: "work" | "shortBreak" | "longBreak";
   timeLeft: number;
   completedPomodoros: number;
   endTime: number | null;
@@ -187,17 +187,17 @@ interface TimerState {
 
 const DEFAULT_TIMER_STATE: TimerState = {
   isRunning: false,
-  timerType: 'work',
+  timerType: "work",
   timeLeft: 1500, // 25 minutes in seconds
   completedPomodoros: 0,
   endTime: null,
-  lastUpdated: Date.now()
+  lastUpdated: Date.now(),
 };
 
-const TIMER_STATE_KEY = 'muslim_task_manager_timer_state';
+const TIMER_STATE_KEY = "muslim_task_manager_timer_state";
 
 export const getTimerState = (): TimerState => {
-  if (typeof window === 'undefined') return DEFAULT_TIMER_STATE;
+  if (typeof window === "undefined") return DEFAULT_TIMER_STATE;
 
   const stateJson = localStorage.getItem(TIMER_STATE_KEY);
   if (!stateJson) return DEFAULT_TIMER_STATE;
@@ -216,21 +216,24 @@ export const getTimerState = (): TimerState => {
         savedState.endTime = null;
 
         // If it was a work session, increment completed pomodoros
-        if (savedState.timerType === 'work') {
+        if (savedState.timerType === "work") {
           savedState.completedPomodoros += 1;
 
           // Determine next break type
           const settings = getPomodoroSettings();
-          if (savedState.completedPomodoros % settings.longBreakInterval === 0) {
-            savedState.timerType = 'longBreak';
+          if (
+            savedState.completedPomodoros % settings.longBreakInterval ===
+            0
+          ) {
+            savedState.timerType = "longBreak";
             savedState.timeLeft = settings.longBreakDuration * 60;
           } else {
-            savedState.timerType = 'shortBreak';
+            savedState.timerType = "shortBreak";
             savedState.timeLeft = settings.shortBreakDuration * 60;
           }
         } else {
           // If it was a break, next should be work
-          savedState.timerType = 'work';
+          savedState.timerType = "work";
           savedState.timeLeft = getPomodoroSettings().workDuration * 60;
         }
       }
@@ -239,17 +242,19 @@ export const getTimerState = (): TimerState => {
     savedState.lastUpdated = Date.now();
     return savedState;
   } catch (error) {
-    console.error('Failed to parse timer state from localStorage', error);
+    console.error("Failed to parse timer state from localStorage", error);
     return DEFAULT_TIMER_STATE;
   }
 };
 
-export const saveTimerState = (state: Omit<TimerState, 'lastUpdated'>): void => {
-  if (typeof window === 'undefined') return;
+export const saveTimerState = (
+  state: Omit<TimerState, "lastUpdated">,
+): void => {
+  if (typeof window === "undefined") return;
 
   const stateWithTimestamp = {
     ...state,
-    lastUpdated: Date.now()
+    lastUpdated: Date.now(),
   };
 
   localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(stateWithTimestamp));
